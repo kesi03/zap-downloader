@@ -1,0 +1,9 @@
+export { command as coreCommand, describe as coreDescribe, builder as coreBuilder, handler as coreHandler } from './core';
+export { command as addonsCommand, describe as addonsDescribe, builder as addonsBuilder, handler as addonsHandler } from './addons';
+export { command as listCommand, describe as listDescribe, builder as listBuilder, handler as listHandler } from './list';
+export { command as infoCommand, describe as infoDescribe, builder as infoBuilder, handler as infoHandler } from './info';
+export { command as createConfigCommand, describe as createConfigDescribe, builder as createConfigBuilder, handler as createConfigHandler } from './create-config';
+export { command as createZapConfigCommand, describe as createZapConfigDescribe, builder as createZapConfigBuilder, handler as createZapConfigHandler } from './create-zap-config';
+export { command as downloadZapCommand, describe as downloadZapDescribe, builder as downloadZapBuilder, handler as downloadZapHandler } from './download-zap';
+export { command as packageCommand, describe as packageDescribe, builder as packageBuilder, handler as packageHandler } from './package';
+export { command as workspaceCommand, describe as workspaceDescribe, builder as workspaceBuilder, handler as workspaceHandler } from './workspace';

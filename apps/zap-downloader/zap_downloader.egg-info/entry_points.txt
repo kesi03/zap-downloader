@@ -1,0 +1,2 @@
+[console_scripts]
+zap-downloader = zap_downloader.cli:app

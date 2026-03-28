@@ -1,0 +1,74 @@
+addons:
+  # --- Core scanning engines ---
+  - id: ascan
+    status: release
+  - id: ascanrules
+    status: release
+  - id: pscan
+    status: release
+  - id: pscanrules
+    status: release
+
+  # --- Crawlers ---
+  - id: spider
+    status: release
+  - id: ajaxSpider
+    status: release
+  - id: clientSpider
+    status: release
+
+  # --- Automation Framework ---
+  - id: automation
+    status: release
+  - id: automationFramework
+    status: release
+
+  # --- Replacer (important for auth, header injection, etc.) ---
+  - id: replacer
+    status: release
+
+  # --- Scripting & Languages ---
+  - id: scripts
+    status: release
+  - id: groovy
+    status: release
+  - id: kotlin
+    status: release
+  - id: python
+    status: release
+
+  # --- Fuzzer ---
+  - id: fuzz
+    status: release
+
+  # --- Reporting ---
+  - id: report
+    status: release
+  - id: exportreport
+    status: release
+
+  # --- Networking / Protocol helpers ---
+  - id: network
+    status: release
+  - id: websocket
+    status: release
+
+  # --- Authentication helpers ---
+  - id: authhelper
+    status: release
+  - id: formhandler
+    status: release
+
+  # --- Modern web support ---
+  - id: domxss
+    status: release
+  - id: selenium
+    status: release
+
+  # --- Optional but common in CI ---
+  - id: openapi
+    status: release
+  - id: soap
+    status: release
+
+output: ./zap-addons

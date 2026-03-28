@@ -1,0 +1,84 @@
+addons:
+  - id: accessControl
+    status: alpha
+  - id: allinonenotes
+    status: alpha
+  - id: ascanrulesAlpha
+    status: alpha
+  - id: authstats
+    status: alpha
+  - id: browserView
+    status: alpha
+  - id: bugtracker
+    status: alpha
+  - id: callgraph
+    status: alpha
+  - id: client
+    status: alpha
+  - id: communityScripts
+    status: alpha
+  - id: database
+    status: alpha
+  - id: dev
+    status: alpha
+  - id: fileupload
+    status: alpha
+  - id: foxhound
+    status: alpha
+  - id: fuzzai
+    status: alpha
+  - id: graaljs
+    status: alpha
+  - id: graphql
+    status: alpha
+  - id: grpc
+    status: alpha
+  - id: httpsInfo
+    status: alpha
+  - id: insights
+    status: alpha
+  - id: jsonview
+    status: alpha
+  - id: jwt
+    status: alpha
+  - id: kotlin
+    status: alpha
+  - id: levoai
+    status: alpha
+  - id: maplocal
+    status: alpha
+  - id: neonmarker
+    status: alpha
+  - id: packpentester
+    status: alpha
+  - id: packscanrules
+    status: alpha
+  - id: paramdigger
+    status: alpha
+  - id: postman
+    status: alpha
+  - id: pscan
+    status: alpha
+  - id: pscanrulesAlpha
+    status: alpha
+  - id: ptk
+    status: alpha
+  - id: reflect
+    status: alpha
+  - id: regextester
+    status: alpha
+  - id: retest
+    status: alpha
+  - id: revisit
+    status: alpha
+  - id: saml
+    status: alpha
+  - id: scanpolicies
+    status: alpha
+  - id: srm
+    status: alpha
+  - id: sse
+    status: alpha
+  - id: viewstate
+    status: alpha
+output: ./zap-addons

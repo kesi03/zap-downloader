@@ -1,0 +1,11 @@
+azure_ext_client/__pycache__
+*.pyc
+.env
+azure_ext_client.egg-info
+build/
+downloads/
+**_downloads/
+.venv
+.idea
+venv
+__pycache__
