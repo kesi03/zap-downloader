@@ -6,4 +6,6 @@ export { command as createConfigCommand, describe as createConfigDescribe, build
 export { command as createZapConfigCommand, describe as createZapConfigDescribe, builder as createZapConfigBuilder, handler as createZapConfigHandler } from './create-zap-config';
 export { command as downloadZapCommand, describe as downloadZapDescribe, builder as downloadZapBuilder, handler as downloadZapHandler } from './download-zap';
 export { command as packageCommand, describe as packageDescribe, builder as packageBuilder, handler as packageHandler } from './package';
+export { command as unpackCommand, describe as unpackDescribe, builder as unpackBuilder, handler as unpackHandler } from './unpack';
+export { command as daemonCommand, describe as daemonDescribe, builder as daemonBuilder, handler as daemonHandler } from './daemon';
 export { command as workspaceCommand, describe as workspaceDescribe, builder as workspaceBuilder, handler as workspaceHandler } from './workspace';

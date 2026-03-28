@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config';
 import yargs from 'yargs/yargs';
 import type { CommandModule } from 'yargs';
 import {
@@ -34,13 +35,20 @@ import {
   packageDescribe,
   packageBuilder,
   packageHandler,
+  unpackCommand,
+  unpackDescribe,
+  unpackBuilder,
+  unpackHandler,
+  daemonCommand,
+  daemonDescribe,
+  daemonBuilder,
+  daemonHandler,
   workspaceCommand,
   workspaceDescribe,
   workspaceBuilder,
   workspaceHandler,
 } from './commands';
-
-const DEFAULT_WORKSPACE = 'zap-workspace';
+import { getWorkspace } from './workspace';
 
 const coreModule: CommandModule = {
   command: coreCommand,
@@ -98,6 +106,20 @@ const packageModule: CommandModule = {
   handler: packageHandler as any,
 };
 
+const unpackModule: CommandModule = {
+  command: unpackCommand,
+  describe: unpackDescribe,
+  builder: unpackBuilder,
+  handler: unpackHandler as any,
+};
+
+const daemonModule: CommandModule = {
+  command: daemonCommand,
+  describe: daemonDescribe,
+  builder: daemonBuilder,
+  handler: daemonHandler as any,
+};
+
 const workspaceModule: CommandModule = {
   command: workspaceCommand,
   describe: workspaceDescribe,
@@ -112,9 +134,9 @@ const argv = yargs(process.argv.slice(2))
   .version('1.0.0')
   .option('workspace', {
     alias: 'w',
-    description: 'Workspace directory (default: zap-workspace, or ZAP_PACKAGES_WORKSPACE env)',
+    description: 'Workspace directory (default: workspace, or ZAP_DOWNLOADER_WORKSPACE env)',
     type: 'string',
-    default: DEFAULT_WORKSPACE,
+    default: getWorkspace(),
     global: true,
   })
   .command(coreModule)
@@ -125,6 +147,8 @@ const argv = yargs(process.argv.slice(2))
   .command(createZapConfigModule)
   .command(downloadZapModule)
   .command(packageModule)
+  .command(unpackModule)
+  .command(daemonModule)
   .command(workspaceModule)
   .help()
   .demandCommand(1, 'Please specify a command')

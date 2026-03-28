@@ -1,8 +1,7 @@
 import * as path from 'path';
-import * as fs from 'fs';
 import chalk from 'chalk';
 import { Arguments } from 'yargs';
-import { ensureWorkspace, getWorkspace } from '../workspace';
+import { ensureWorkspace, getWorkspace, getDownloadsDir, getInstallDir, getPackagesDir, getZapHomeDir } from '../workspace';
 
 export const command = 'workspace';
 export const describe = 'Create workspace directory if it does not exist';
@@ -24,16 +23,16 @@ export const handler = async (argv: Arguments & {
   if (argv.show) {
     const workspace = getWorkspace();
     console.log(chalk.blue(`Current workspace: ${workspace}`));
-    console.log(chalk.gray(`(ZAP_PACKAGES_WORKSPACE: ${process.env.ZAP_PACKAGES_WORKSPACE || 'not set'})`));
+    console.log(chalk.gray(`Subdirectories:`));
+    console.log(chalk.gray(`  - downloads: ${getDownloadsDir()}`));
+    console.log(chalk.gray(`  - install: ${getInstallDir()}`));
+    console.log(chalk.gray(`  - packages: ${getPackagesDir()}`));
+    console.log(chalk.gray(`  - zap_home: ${getZapHomeDir()}`));
+    console.log(chalk.gray(`(ZAP_DOWNLOADER_WORKSPACE: ${process.env.ZAP_DOWNLOADER_WORKSPACE || 'not set'})`));
     return;
   }
 
   const workspace = ensureWorkspace(argv.workspace);
   console.log(chalk.green(`Workspace ready: ${workspace}`));
-
-  const addonsDir = path.join(workspace, 'addons');
-  if (!fs.existsSync(addonsDir)) {
-    fs.mkdirSync(addonsDir, { recursive: true });
-    console.log(chalk.green(`Created addons directory: ${addonsDir}`));
-  }
+  console.log(chalk.green(`Subdirectories: ${getDownloadsDir()}, ${getInstallDir()}, ${getPackagesDir()}, ${getZapHomeDir()}`));
 };

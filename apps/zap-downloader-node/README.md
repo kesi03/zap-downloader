@@ -152,7 +152,69 @@ npm run package -- -n my-zap                  # Creates my-zap.tar.gz
 npm run package -- -o custom-name.tar.gz     # Creates custom-name.tar.gz
 ```
 
-#### 9. Workspace Management
+#### 9. Package Workspace
+
+Create a `.tar` archive of the workspace:
+
+```bash
+npm run package -- [-o <output-file>]
+```
+
+Options:
+- `-o, --output` - Output `.tar` archive path (default: `zap-package.tar`)
+
+Example:
+```bash
+npm run package -- -o my-zap.tar
+```
+
+#### 10. Unpack Package
+
+Unpack a `.tar` package and organize addons:
+
+```bash
+npm run unpack -- -i <input.tar> [-o output-dir]
+```
+
+Options:
+- `-i`, `--input` - Path to the `.tar` package file (required)
+- `-o`, `--output` - Output directory (default: extracted archive name)
+
+Example:
+```bash
+npm run unpack -- -i linux-zap.tar -o ./zap-install
+```
+
+#### 11. Start/Stop Daemon
+
+Start or stop ZAP as a daemon using pm2:
+
+```bash
+npm run daemon -- start-daemon [-d dir] [-w workspace] [-P port] [-k api-key]
+npm run daemon -- stop-daemon
+```
+
+Options:
+- `-d`, `--dir` - ZAP installation directory (where zap.jar is)
+- `-w`, `--workspace` - Working directory
+- `-P`, `--port` - Proxy port (default: 8080)
+- `-k`, `--api-key` - API key (optional, defaults to disabled)
+- `-N`, `--name` - Process name (default: zap-daemon)
+
+Examples:
+```bash
+# Start daemon
+npm run daemon -- start-daemon -d ./zap/ZAP_2.17.0 -w ./workspace -P 8080
+
+# Stop daemon
+npm run daemon -- stop-daemon
+```
+
+The daemon runs with:
+- API key disabled (`api.disablekey=true`)
+- All hosts allowed (`api.addrs.addr.name=.*`)
+
+#### 12. Workspace Management
 
 ```bash
 npm run workspace              # Create workspace and addons directory
@@ -217,7 +279,9 @@ zap-workspace/           # Default workspace
 | `pnpm run create-config` | Create addon config interactively |
 | `pnpm run create-zap-config` | Create full ZAP config (platform + addons) |
 | `pnpm run download-zap` | Download ZAP core and addons |
-| `pnpm run package` | Package workspace as tar.gz |
+| `pnpm run package` | Package workspace as .tar archive |
+| `pnpm run unpack` | Unpack archive and organize addons |
+| `pnpm run daemon` | Start/stop ZAP daemon |
 | `pnpm run workspace` | Manage workspace |
 
 ---

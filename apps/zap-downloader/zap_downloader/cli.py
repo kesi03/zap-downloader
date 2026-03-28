@@ -9,6 +9,8 @@ from .commands import (
     create_zap_config,
     download_zap,
     package,
+    unpack,
+    daemon,
     workspace,
     validate,
 )
@@ -27,6 +29,9 @@ app.command(name="create-config")(create_config.create_config)
 app.command(name="create-zap-config")(create_zap_config.create_zap_config)
 app.command(name="download-zap")(download_zap.download_zap)
 app.command(name="package")(package.package)
+app.command(name="unpack")(unpack.unpack)
+app.command(name="start-daemon")(daemon.start_daemon)
+app.command(name="stop-daemon")(daemon.stop_daemon)
 app.command(name="workspace")(workspace.workspace)
 app.command(name="validate")(validate.validate)
 

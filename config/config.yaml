@@ -1,0 +1,144 @@
+addons:
+  - id: accessControl
+    status: alpha
+  - id: alertFilters
+    status: release
+  - id: allinonenotes
+    status: alpha
+  - id: ascanrules
+    status: release
+  - id: ascanrulesAlpha
+    status: alpha
+  - id: ascanrulesBeta
+    status: beta
+  - id: authhelper
+    status: beta
+  - id: automation
+    status: beta
+  - id: bruteforce
+    status: beta
+  - id: bugtracker
+    status: alpha
+  - id: callhome
+    status: release
+  - id: client
+    status: alpha
+  - id: commonlib
+    status: release
+  - id: communityScripts
+    status: alpha
+  - id: coreLang
+    status: release
+  - id: database
+    status: alpha
+  - id: directorylistv1
+    status: release
+  - id: domxss
+    status: release
+  - id: encoder
+    status: release
+  - id: fileupload
+    status: alpha
+  - id: formhandler
+    status: beta
+  - id: foxhound
+    status: alpha
+  - id: fuzz
+    status: beta
+  - id: fuzzdb
+    status: release
+  - id: gettingStarted
+    status: release
+  - id: graaljs
+    status: alpha
+  - id: graphql
+    status: alpha
+  - id: groovy
+    status: beta
+  - id: grpc
+    status: alpha
+  - id: httpsInfo
+    status: alpha
+  - id: hud
+    status: beta
+  - id: insights
+    status: alpha
+  - id: jruby
+    status: beta
+  - id: jsonview
+    status: alpha
+  - id: jwt
+    status: alpha
+  - id: jython
+    status: beta
+  - id: kotlin
+    status: alpha
+  - id: levoai
+    status: alpha
+  - id: maplocal
+    status: alpha
+  - id: network
+    status: beta
+  - id: openapi
+    status: beta
+  - id: packpentester
+    status: alpha
+  - id: packscanrules
+    status: alpha
+  - id: paramdigger
+    status: alpha
+  - id: postman
+    status: alpha
+  - id: pscan
+    status: alpha
+  - id: pscanrules
+    status: release
+  - id: pscanrulesAlpha
+    status: alpha
+  - id: pscanrulesBeta
+    status: beta
+  - id: quickstart
+    status: release
+  - id: reflect
+    status: alpha
+  - id: regextester
+    status: alpha
+  - id: replacer
+    status: release
+  - id: reports
+    status: release
+  - id: requester
+    status: beta
+  - id: retest
+    status: alpha
+  - id: retire
+    status: release
+  - id: reveal
+    status: release
+  - id: revisit
+    status: alpha
+  - id: scanpolicies
+    status: alpha
+  - id: scripts
+    status: release
+  - id: selenium
+    status: release
+  - id: spider
+    status: release
+  - id: spiderAjax
+    status: release
+  - id: svndigger
+    status: release
+  - id: wappalyzer
+    status: release
+  - id: webdriverlinux
+    status: release
+  - id: webdrivermacos
+    status: release
+  - id: webdriverwindows
+    status: release
+  - id: websocket
+    status: release
+  - id: zest
+    status: beta
+output: ./zap/addons

@@ -1,0 +1,60 @@
+addons:
+  - id: alertFilters
+    status: release
+  - id: ascanrules
+    status: release
+  - id: callhome
+    status: release
+  - id: commonlib
+    status: release
+  - id: coreLang
+    status: release
+  - id: custompayloads
+    status: release
+  - id: directorylistv1
+    status: release
+  - id: directorylistv2_3
+    status: release
+  - id: directorylistv2_3_lc
+    status: release
+  - id: domxss
+    status: release
+  - id: encoder
+    status: release
+  - id: fuzzdb
+    status: release
+  - id: fuzzdboffensive
+    status: release
+  - id: pscanrules
+    status: release
+  - id: quickstart
+    status: release
+  - id: replacer
+    status: release
+  - id: reports
+    status: release
+  - id: retire
+    status: release
+  - id: reveal
+    status: release
+  - id: scripts
+    status: release
+  - id: selenium
+    status: release
+  - id: spider
+    status: release
+  - id: spiderAjax
+    status: release
+  - id: svndigger
+    status: release
+  - id: wappalyzer
+    status: release
+  - id: webdriverlinux
+    status: release
+  - id: webdrivermacos
+    status: release
+  - id: webdriverwindows
+    status: release
+  - id: websocket
+    status: release
+output: ./zap/addons

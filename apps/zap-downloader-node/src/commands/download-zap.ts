@@ -67,7 +67,7 @@ export const handler = async (argv: Arguments & {
   await downloadFile(platformData.url, zapOutputPath, platformData.hash);
   console.log(chalk.green('ZAP core downloaded!'));
 
-  const addonsDir = path.join(workspace, 'addons');
+  const addonsDir = path.join(zapDir, 'addons');
   if (!fs.existsSync(addonsDir)) {
     fs.mkdirSync(addonsDir, { recursive: true });
   }

@@ -61,7 +61,7 @@ async def _download_zap(config_path: str, workspace: str):
     await download_file(platform_data.url, zap_output_path, platform_data.hash)
     console.print("[green]ZAP core downloaded![/green]")
 
-    addons_dir = os.path.join(workspace, "addons")
+    addons_dir = os.path.join(zap_dir, "addons")
     if not os.path.exists(addons_dir):
         os.makedirs(addons_dir, exist_ok=True)
 

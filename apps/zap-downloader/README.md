@@ -82,19 +82,35 @@ zap-downloader core -p linux -o ./zap-install
 
 ### Download Addons
 
-Download specific addons by ID:
+Download addons by ID or from a config file:
 
 ```bash
-zap-downloader addons <addon-id> [<addon-id> ...] [-s status] [-w workspace]
+zap-downloader addons [-c config-file] [addon-id ...] [-s status] [-w workspace] [-o output-dir]
 ```
 
 Options:
+- `-c`, `--config` - Path to YAML or JSON config file
 - `-s`, `--status` - Filter by status: `release`, `beta`, `alpha`
+- `-o`, `--output` - Output directory for addons
 
-Example:
+Examples:
 ```bash
+# Download by addon IDs
 zap-downloader addons commonlib pscanrules
 zap-downloader addons ascanrulesBeta -s beta
+
+# Download from config file
+zap-downloader addons -c my-addons.yaml
+zap-downloader addons -c config.json -o ./my-addons
+```
+
+Config file example (`addons.yaml`):
+```yaml
+addons:
+  - id: commonlib
+  - id: pscanrules
+    status: release
+output: ./addons
 ```
 
 ### Create Config Files
@@ -171,16 +187,68 @@ zap-downloader validate ./addons/commonlib-release-1.40.0.zap --addon commonlib
 
 ### Package Directory
 
-Package ZAP core and addons into a directory:
+Package ZAP core and addons into a `.tar` archive:
 
 ```bash
-zap-downloader package [-o output-dir] [-w workspace]
+zap-downloader package [-o output.tar] [-w workspace]
 ```
 
 Example:
 ```bash
-zap-downloader package -o ./release-package
+zap-downloader package -o ./release-package.tar
 ```
+
+### Unpack Package
+
+Unpack a `.tar` package and organize addons:
+
+```bash
+zap-downloader unpack -i <input.tar> [-o output-dir]
+```
+
+Options:
+- `-i`, `--input` - Path to the `.tar` package file (required)
+- `-o`, `--output` - Output directory (default: extracted archive name)
+
+Example:
+```bash
+zap-downloader unpack -i linux-zap.tar -o ./zap-install
+```
+
+This command:
+1. Extracts the `.tar` archive
+2. Extracts any `.tar.gz` ZAP core archive inside
+3. Moves addons to the `plugin` folder (if not already present)
+4. Removes the empty `addons` folder
+
+### Start/Stop Daemon
+
+Start or stop ZAP as a daemon:
+
+```bash
+zap-downloader start-daemon [-d dir] [-w workspace] [-P port] [-k api-key]
+zap-downloader stop-daemon [-w workspace]
+```
+
+Options:
+- `-d`, `--dir` - ZAP installation directory (where zap.jar is)
+- `-w`, `--workspace` - Working directory
+- `-P`, `--port` - Proxy port (default: 8080)
+- `-k`, `--api-key` - API key (optional, defaults to disabled)
+- `-N`, `--name` - Process name (default: zap-daemon)
+
+Examples:
+```bash
+# Start daemon
+zap-downloader start-daemon -d ./zap/ZAP_2.17.0 -w ./workspace -P 8080
+
+# Stop daemon
+zap-downloader stop-daemon
+```
+
+The daemon runs with:
+- API key disabled (`api.disablekey=true`)
+- All hosts allowed (`api.addrs.addr.name=.*`)
 
 ### Workspace Management
 
@@ -222,6 +290,7 @@ zap-downloader/
 │       ├── create_config.py
 │       ├── create_zap_config.py
 │       ├── package.py
+│       ├── unpack.py
 │       ├── validate.py
 │       └── workspace.py
 └── pyproject.toml

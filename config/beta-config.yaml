@@ -1,0 +1,56 @@
+addons:
+  - id: ascanrulesBeta
+    status: beta
+  - id: authhelper
+    status: beta
+  - id: automation
+    status: beta
+  - id: beanshell
+    status: beta
+  - id: bruteforce
+    status: beta
+  - id: diff
+    status: beta
+  - id: exim
+    status: beta
+  - id: formhandler
+    status: beta
+  - id: fuzz
+    status: beta
+  - id: groovy
+    status: beta
+  - id: hud
+    status: beta
+  - id: imagelocationscanner
+    status: beta
+  - id: invoke
+    status: beta
+  - id: jruby
+    status: beta
+  - id: jython
+    status: beta
+  - id: network
+    status: beta
+  - id: oast
+    status: beta
+  - id: openapi
+    status: beta
+  - id: plugnhack
+    status: beta
+  - id: pscanrulesBeta
+    status: beta
+  - id: requester
+    status: beta
+  - id: sequence
+    status: beta
+  - id: soap
+    status: beta
+  - id: sqliplugin
+    status: beta
+  - id: tokengen
+    status: beta
+  - id: treetools
+    status: beta
+  - id: zest
+    status: beta
+output: ./zap/addons

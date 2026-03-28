@@ -1,0 +1,7 @@
+addons:
+  - id: ascanrules
+    status: release
+  - id: pscan
+    status: release
+  - id: fuzz
+output: ./zap/addons
