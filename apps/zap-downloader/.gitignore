@@ -1,7 +1,7 @@
-azure_ext_client/__pycache__
+zap_downloader/__pycache__
 *.pyc
 .env
-azure_ext_client.egg-info
+zap_downloader.egg-info
 build/
 downloads/
 **_downloads/
@@ -9,3 +9,4 @@ downloads/
 .idea
 venv
 __pycache__
+zap-workspace/

@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 zap_downloader/__init__.py
 zap_downloader/__main__.py
@@ -12,13 +13,13 @@ zap_downloader.egg-info/dependency_links.txt
 zap_downloader.egg-info/entry_points.txt
 zap_downloader.egg-info/requires.txt
 zap_downloader.egg-info/top_level.txt
-zap_downloader/commands/__init__.py
 zap_downloader/commands/addons.py
 zap_downloader/commands/core.py
 zap_downloader/commands/create_config.py
 zap_downloader/commands/create_zap_config.py
 zap_downloader/commands/download_zap.py
 zap_downloader/commands/info.py
-zap_downloader/commands/list.py
+zap_downloader/commands/list_versions.py
 zap_downloader/commands/package.py
+zap_downloader/commands/validate.py
 zap_downloader/commands/workspace.py
