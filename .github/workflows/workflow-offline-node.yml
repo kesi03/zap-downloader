@@ -30,6 +30,13 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.0.0 --activate
       
+      - name: Setup pnpm global bin
+        run: |
+          export PNPM_HOME="/home/runner/.pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm setup
+          echo "$PNPM_HOME" >> $GITHUB_PATH
+      
       - name: Install Java
         run: sudo apt-get update && sudo apt-get install -y default-jre
       
