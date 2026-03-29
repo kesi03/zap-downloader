@@ -53,7 +53,6 @@ export const handler = async (argv: Arguments & {
   const { execSync } = await import('child_process');
 
   try {
-    const cwd = process.cwd();
     const files = [];
     
     if (fs.existsSync(zapDir)) {
@@ -65,7 +64,8 @@ export const handler = async (argv: Arguments & {
       console.log(chalk.green('Added addons/ to archive'));
     }
 
-    execSync(`tar -cf "${outputName}" ${files.join(' ')}`, { cwd });
+    const outputRelPath = path.relative(workspace, outputName);
+    execSync(`tar -cf "${outputRelPath}" ${files.join(' ')}`, { cwd: workspace });
     console.log(chalk.green(`Package created: ${outputName}`));
 
     const stats = fs.statSync(outputName);

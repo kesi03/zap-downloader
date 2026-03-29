@@ -47,6 +47,10 @@ import {
   workspaceDescribe,
   workspaceBuilder,
   workspaceHandler,
+  createTomlConfigCommand,
+  createTomlConfigDescribe,
+  createTomlConfigBuilder,
+  createTomlConfigHandler,
 } from './commands';
 import { getWorkspace } from './workspace';
 
@@ -127,6 +131,13 @@ const workspaceModule: CommandModule = {
   handler: workspaceHandler as any,
 };
 
+const createTomlConfigModule: CommandModule = {
+  command: createTomlConfigCommand,
+  describe: createTomlConfigDescribe,
+  builder: createTomlConfigBuilder,
+  handler: createTomlConfigHandler as any,
+};
+
 const argv = yargs(process.argv.slice(2))
   .scriptName('zap-downloader')
   .usage('$0 <command> [options]')
@@ -150,6 +161,7 @@ const argv = yargs(process.argv.slice(2))
   .command(unpackModule)
   .command(daemonModule)
   .command(workspaceModule)
+  .command(createTomlConfigModule)
   .help()
   .demandCommand(1, 'Please specify a command')
   .parse();

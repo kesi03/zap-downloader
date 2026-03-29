@@ -7,6 +7,7 @@ from .commands import (
     info,
     create_config,
     create_zap_config,
+    create_toml_config,
     download_zap,
     package,
     unpack,
@@ -27,6 +28,7 @@ app.command(name="list")(list_versions.list_versions)
 app.command(name="info")(info.info)
 app.command(name="create-config")(create_config.create_config)
 app.command(name="create-zap-config")(create_zap_config.create_zap_config)
+app.command(name="create-toml-config")(create_toml_config.create_toml_config)
 app.command(name="download-zap")(download_zap.download_zap)
 app.command(name="package")(package.package)
 app.command(name="unpack")(unpack.unpack)

@@ -1,0 +1,101 @@
+zap:
+  platform: linux
+  version: stable
+addons:
+  - id: alertFilters
+    status: release
+  - id: ascanrules
+    status: release
+  - id: authhelper
+    status: beta
+  - id: automation
+    status: beta
+  - id: bruteforce
+    status: beta
+  - id: callhome
+    status: release
+  - id: client
+    status: alpha
+  - id: commonlib
+    status: release
+  - id: database
+    status: alpha
+  - id: diff
+    status: beta
+  - id: directorylistv1
+    status: release
+  - id: domxss
+    status: release
+  - id: encoder
+    status: release
+  - id: exim
+    status: beta
+  - id: formhandler
+    status: beta
+  - id: fuzz
+    status: beta
+  - id: gettingStarted
+    status: release
+  - id: graaljs
+    status: alpha
+  - id: graphql
+    status: alpha
+  - id: help
+    status: release
+  - id: hud
+    status: beta
+  - id: insights
+    status: alpha
+  - id: invoke
+    status: beta
+  - id: network
+    status: beta
+  - id: oast
+    status: beta
+  - id: onlineMenu
+    status: release
+  - id: openapi
+    status: beta
+  - id: postman
+    status: alpha
+  - id: pscan
+    status: alpha
+  - id: pscanrules
+    status: release
+  - id: quickstart
+    status: release
+  - id: replacer
+    status: release
+  - id: reports
+    status: release
+  - id: requester
+    status: beta
+  - id: retest
+    status: alpha
+  - id: retire
+    status: release
+  - id: reveal
+    status: release
+  - id: scanpolicies
+    status: alpha
+  - id: scripts
+    status: release
+  - id: selenium
+    status: release
+  - id: sequence
+    status: beta
+  - id: soap
+    status: beta
+  - id: spider
+    status: release
+  - id: spiderAjax
+    status: release
+  - id: tips
+    status: beta
+  - id: webdriverlinux
+    status: release
+  - id: websocket
+    status: release
+  - id: zest
+    status: beta
+output: ./zap/addons

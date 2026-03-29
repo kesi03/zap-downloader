@@ -3,9 +3,35 @@ import * as fs from 'fs';
 import chalk from 'chalk';
 import { Arguments } from 'yargs';
 import pm2 from 'pm2';
+import * as toml from '@iarna/toml';
 import { getWorkspace } from '../workspace';
 
 type PM2ProcessInfo = any;
+
+interface TomlConfig {
+  ENV?: {
+    ZAP_DOWNLOADER_WORKSPACE?: string;
+    ZAP_DOWNLOADER_DOWNLOADS?: string;
+    ZAP_DOWNLOADER_INSTALL?: string;
+    ZAP_DOWNLOADER_PACKAGES?: string;
+    ZAP_DOWNLOADER_ZAP_HOME?: string;
+  };
+  SERVER?: {
+    PORT?: number;
+    HOST?: string;
+  };
+  PATHS?: {
+    JAR_PATH?: string;
+    DIR?: string;
+    INSTALL_DIR?: string;
+  };
+  JAVA_OPTIONS?: {
+    flags?: string[];
+  };
+  CONFIG?: {
+    flags?: string[];
+  };
+}
 
 export const command = 'daemon';
 export const describe = 'Manage ZAP daemon';
@@ -19,11 +45,39 @@ export const builder = (yargs: any) => {
 
 export const handler = () => {};
 
+function parseTomlConfig(tomlPath: string): TomlConfig {
+  const content = fs.readFileSync(tomlPath, 'utf-8');
+  return toml.parse(content) as TomlConfig;
+}
+
+function resolveTomlPaths(config: TomlConfig, defaultWorkspace: string): TomlConfig {
+  const workspace = config.ENV?.ZAP_DOWNLOADER_WORKSPACE || defaultWorkspace;
+  
+  return {
+    ...config,
+    ENV: {
+      ...config.ENV,
+      ZAP_DOWNLOADER_WORKSPACE: workspace,
+    },
+    PATHS: {
+      ...config.PATHS,
+      JAR_PATH: config.PATHS?.JAR_PATH || '',
+      DIR: config.PATHS?.DIR || '.zap',
+      INSTALL_DIR: config.PATHS?.INSTALL_DIR || path.join(workspace, 'install').replace(/\\/g, '/'),
+    },
+  };
+}
+
 const startDaemonCommand = {
   command: 'start-daemon',
   describe: 'Start ZAP as a daemon using pm2',
   builder: (yargs: any) => {
     return yargs
+      .option('toml', {
+        alias: 't',
+        description: 'Path to zap.toml configuration file',
+        type: 'string',
+      })
       .option('dir', {
         alias: 'd',
         description: 'ZAP installation directory (where zap.jar is)',
@@ -59,6 +113,7 @@ const startDaemonCommand = {
       });
   },
   handler: async (argv: Arguments & {
+    toml?: string;
     dir?: string;
     workspace?: string;
     host?: string;
@@ -66,16 +121,47 @@ const startDaemonCommand = {
     apiKey?: string;
     name?: string;
   }) => {
-    const zapInstallDir = argv.dir || path.join(argv.workspace || getWorkspace(), 'zap');
-    const workingDir = argv.workspace || getWorkspace();
-    const host = argv.host || '0.0.0.0';
-    const port = argv.port || 8080;
-    const apiKey = argv.apiKey || '';
+    let config: TomlConfig = {};
+    let useToml = false;
+    let workspace = argv.workspace || getWorkspace();
+
+    if (argv.toml) {
+      if (!fs.existsSync(argv.toml)) {
+        console.error(chalk.red(`TOML file not found: ${argv.toml}`));
+        process.exit(1);
+      }
+      console.log(chalk.blue(`Using TOML config: ${argv.toml}`));
+      config = parseTomlConfig(argv.toml);
+      config = resolveTomlPaths(config, workspace);
+      useToml = true;
+    }
+
+    const host = useToml ? (config.SERVER?.HOST || '0.0.0.0') : (argv.host || '0.0.0.0');
+    const port = useToml ? (config.SERVER?.PORT || 8080) : (argv.port || 8080);
+    const apiKey = useToml ? '' : (argv.apiKey || '');
     const processName = argv.name || 'zap-daemon';
+    
+    const zapHomeDir = useToml 
+      ? (config.ENV?.ZAP_DOWNLOADER_ZAP_HOME || '.zap')
+      : '.zap';
+
+    const zapInstallDir = useToml
+      ? (config.PATHS?.INSTALL_DIR || path.join(workspace, 'install'))
+      : (argv.dir || path.join(argv.workspace || getWorkspace(), 'zap'));
+    
+    const workingDir = useToml
+      ? (config.ENV?.ZAP_DOWNLOADER_WORKSPACE || workspace)
+      : (argv.workspace || getWorkspace());
 
     let jarPath: string | null = null;
 
-    if (fs.existsSync(zapInstallDir)) {
+    if (useToml && config.PATHS?.JAR_PATH) {
+      if (fs.existsSync(config.PATHS.JAR_PATH)) {
+        jarPath = config.PATHS.JAR_PATH;
+      }
+    }
+
+    if (!jarPath && fs.existsSync(zapInstallDir)) {
       const files = fs.readdirSync(zapInstallDir);
       for (const f of files) {
         if (f.endsWith('.jar') && f.startsWith('zap')) {
@@ -99,7 +185,7 @@ const startDaemonCommand = {
       fs.mkdirSync(tmpDir, { recursive: true });
     }
 
-    const zapDir = path.join(workingDir, '.zap');
+    const zapDir = path.join(workingDir, zapHomeDir);
     if (!fs.existsSync(zapDir)) {
       fs.mkdirSync(zapDir, { recursive: true });
     }
@@ -124,19 +210,41 @@ const startDaemonCommand = {
     const absTmpDir = path.resolve(tmpDir);
     const absZapDir = path.resolve(zapDir);
 
+    const javaOptions: string[] = [];
+    
+    if (useToml && config.JAVA_OPTIONS?.flags) {
+      javaOptions.push(...config.JAVA_OPTIONS.flags);
+    } else {
+      javaOptions.push('-Xmx2g');
+    }
+
+    javaOptions.push(`-Djava.io.tmpdir="${absTmpDir}"`);
+
+    const configFlags: string[] = [];
+    
+    if (useToml && config.CONFIG?.flags) {
+      configFlags.push(...config.CONFIG.flags);
+    } else {
+      configFlags.push(
+        apiKey ? `api.key=${apiKey}` : 'api.disablekey=true',
+        'api.addrs.addr.name=.*',
+        'api.addrs.addr.regex=true'
+      );
+    }
+
+    const javaFlagsStr = javaOptions.join(' ');
+    const configFlagsStr = configFlags.map(f => `-config ${f}`).join(' ');
+
     const cmd = [
       'java',
-      '-Xmx2g',
-      `-Djava.io.tmpdir="${absTmpDir}"`,
+      javaFlagsStr,
       `-jar "${absJarPath}"`,
       '-daemon',
       `-dir "${absZapDir}"`,
       `-installdir "${absInstallDir}"`,
       `-host ${host}`,
       `-port ${port}`,
-      apiKey ? `-config api.key=${apiKey}` : '-config api.disablekey=true',
-      '-config api.addrs.addr.name=.*',
-      '-config api.addrs.addr.regex=true',
+      configFlagsStr,
     ].filter(Boolean).join(' ');
 
     const scriptPath = path.join(workingDir, 'start-zap.sh');
@@ -149,6 +257,9 @@ ${cmd}
     console.log(chalk.gray(`JAR: ${jarPath}`));
     console.log(chalk.gray(`Port: ${port}`));
     console.log(chalk.gray(`Working dir: ${workingDir}`));
+    if (useToml) {
+      console.log(chalk.gray(`Config: TOML (${argv.toml})`));
+    }
 
     try {
       await new Promise<void>((resolve, reject) => {

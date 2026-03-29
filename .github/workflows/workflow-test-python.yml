@@ -1,0 +1,46 @@
+name: Workflow Test - Python
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader/**'
+      - 'tests/test_workflow_python.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader/**'
+      - 'tests/test_workflow_python.py'
+
+jobs:
+  workflow-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e apps/zap-downloader
+          pip install requests
+      
+      - name: Run workflow test
+        run: |
+          cd apps/zap-downloader
+          python ../../tests/test_workflow_python.py
+      
+      - name: Upload workspace on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-python
+          path: workspace/
+          retention-days: 7

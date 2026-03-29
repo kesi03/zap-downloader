@@ -1,0 +1,41 @@
+[ENV]
+# Workspace directory (default: workspace)
+ZAP_DOWNLOADER_WORKSPACE=workspace
+# Subdirectories
+ZAP_DOWNLOADER_DOWNLOADS=downloads
+ZAP_DOWNLOADER_INSTALL=install
+ZAP_DOWNLOADER_PACKAGES=packages
+ZAP_DOWNLOADER_ZAP_HOME=.zap
+
+[SERVER]
+PORT = 8080
+HOST = "0.0.0.0"
+
+[PATHS]
+# the programme needs to work out where and which the jar is
+JAR_PATH = ""
+DIR = ".zap"
+# the programme needs to work out correct address
+INSTALL_DIR = "workspace/install"
+
+[JAVA_OPTIONS]
+flags = [
+  "-Xms4g",
+  "-Xmx4g",
+  "-XX:+UseZGC",
+  "-Xss512k",
+  "-XX:+UseContainerSupport",
+  "-XX:MaxRAMPercentage=80",
+  "-Dzap.session=/zap/wrk/session.data"
+]
+
+[CONFIG]
+flags = [
+  "-config api.disablekey = false",
+  "-config api.addrs.addr.name = .*",
+  "-config api.addrs.addr.regex = true",
+  "-config database.response.bodysize = 104857600",
+  "-config database.cache.size = 1000000",
+  "-config database.recoverylog = false",
+  "-config api.key=secret"
+]

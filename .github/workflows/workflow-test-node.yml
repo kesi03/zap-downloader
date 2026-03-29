@@ -1,0 +1,46 @@
+name: Workflow Test - Node.js
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader-node/**'
+      - 'tests/test_workflow_node.js'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader-node/**'
+      - 'tests/test_workflow_node.js'
+
+jobs:
+  workflow-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        working-directory: apps/zap-downloader-node
+        run: |
+          npm install
+          npm install -g pm2
+      
+      - name: Run workflow test
+        working-directory: apps/zap-downloader-node
+        run: |
+          node ../../tests/test_workflow_node.js
+      
+      - name: Upload workspace on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-node
+          path: apps/zap-downloader-node/workspace/
+          retention-days: 7

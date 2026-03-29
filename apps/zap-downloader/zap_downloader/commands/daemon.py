@@ -3,8 +3,10 @@ import os
 import subprocess
 import signal
 import shutil
+import toml
 from pathlib import Path
 from rich.console import Console
+from typing import Optional, Dict, Any, List
 
 console = Console()
 
@@ -12,11 +14,37 @@ PID_FILE = "zap-daemon.pid"
 PROCESS_NAME = "zap-daemon"
 
 
+def parse_toml_config(toml_path: str) -> Dict[str, Any]:
+    with open(toml_path, "r") as f:
+        return toml.load(f)
+
+
+def resolve_toml_paths(
+    config: Dict[str, Any], default_workspace: str
+) -> Dict[str, Any]:
+    workspace = config.get("ENV", {}).get("ZAP_DOWNLOADER_WORKSPACE", default_workspace)
+
+    env = config.get("ENV", {})
+    env["ZAP_DOWNLOADER_WORKSPACE"] = workspace
+
+    paths = config.get("PATHS", {})
+    paths["JAR_PATH"] = paths.get("JAR_PATH", "")
+    paths["DIR"] = paths.get("DIR", ".zap")
+    paths["INSTALL_DIR"] = paths.get(
+        "INSTALL_DIR", os.path.join(workspace, "install").replace("\\", "/")
+    )
+
+    return config
+
+
 def start_daemon(
-    dir: str = typer.Option(
+    toml: Optional[str] = typer.Option(
+        None, "--toml", "-t", help="Path to zap.toml configuration file"
+    ),
+    dir: Optional[str] = typer.Option(
         None, "--dir", "-d", help="ZAP installation directory (where zap.jar is)"
     ),
-    workspace: str = typer.Option(
+    workspace: Optional[str] = typer.Option(
         None, "--workspace", "-w", help="ZAP working directory"
     ),
     host: str = typer.Option("0.0.0.0", "--host", help="ZAP host to bind to"),
@@ -29,20 +57,47 @@ def start_daemon(
     """Start ZAP as a daemon."""
     from ..workspace import get_workspace
 
-    if not workspace:
-        workspace = get_workspace()
+    config: Dict[str, Any] = {}
+    use_toml = False
 
-    zap_dir = dir if dir else os.path.join(workspace, "zap")
+    if toml:
+        if not os.path.exists(toml):
+            console.print(f"[red]TOML file not found: {toml}[/red]")
+            raise typer.Exit(1)
+        console.print(f"[blue]Using TOML config: {toml}[/blue]")
+        config = parse_toml_config(toml)
+        config = resolve_toml_paths(config, workspace or get_workspace())
+        use_toml = True
+
+    workspace = workspace or get_workspace()
+
+    if use_toml:
+        host = config.get("SERVER", {}).get("HOST", "0.0.0.0")
+        port = config.get("SERVER", {}).get("PORT", 8080)
+        api_key = ""
+        zap_home = config.get("ENV", {}).get("ZAP_DOWNLOADER_ZAP_HOME", ".zap")
+        zap_install_dir = config.get("PATHS", {}).get(
+            "INSTALL_DIR", os.path.join(workspace, "install")
+        )
+        workspace = config.get("ENV", {}).get("ZAP_DOWNLOADER_WORKSPACE", workspace)
+    else:
+        zap_home = ".zap"
+        zap_install_dir = dir if dir else os.path.join(workspace, "zap")
 
     jar_path = None
-    if os.path.exists(zap_dir):
-        for f in os.listdir(zap_dir):
+
+    if use_toml and config.get("PATHS", {}).get("JAR_PATH"):
+        if os.path.exists(config["PATHS"]["JAR_PATH"]):
+            jar_path = config["PATHS"]["JAR_PATH"]
+
+    if not jar_path and os.path.exists(zap_install_dir):
+        for f in os.listdir(zap_install_dir):
             if f.endswith(".jar") and f.startswith("zap"):
-                jar_path = os.path.join(zap_dir, f)
+                jar_path = os.path.join(zap_install_dir, f)
                 break
 
     if not jar_path:
-        console.print(f"[red]JAR file not found in: {zap_dir}[/red]")
+        console.print(f"[red]JAR file not found in: {zap_install_dir}[/red]")
         raise typer.Exit(1)
 
     if not os.path.exists(workspace):
@@ -52,7 +107,7 @@ def start_daemon(
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
 
-    zap_dir = os.path.join(workspace, ".zap")
+    zap_dir = os.path.join(workspace, zap_home)
     if not os.path.exists(zap_dir):
         os.makedirs(zap_dir, exist_ok=True)
 
@@ -68,41 +123,56 @@ def start_daemon(
             if not os.path.exists(dest):
                 shutil.copy2(src, dest)
 
+    java_options: List[str] = []
+
+    if use_toml and config.get("JAVA_OPTIONS", {}).get("flags"):
+        java_options.extend(config["JAVA_OPTIONS"]["flags"])
+    else:
+        java_options.append("-Xmx2g")
+
+    java_options.append(f"-Djava.io.tmpdir={tmp_dir}")
+
+    config_flags: List[str] = []
+
+    if use_toml and config.get("CONFIG", {}).get("flags"):
+        config_flags.extend(config["CONFIG"]["flags"])
+    else:
+        if api_key:
+            config_flags.append(f"api.key={api_key}")
+        else:
+            config_flags.append("api.disablekey=true")
+        config_flags.append("api.addrs.addr.name=.*")
+        config_flags.append("api.addrs.addr.regex=true")
+
     cmd = [
         "java",
-        "-Xmx2g",
-        f"-Djava.io.tmpdir={tmp_dir}",
-        "-jar",
-        jar_path,
-        "-daemon",
-        "-dir",
-        zap_dir,
-        "-installdir",
-        install_dir,
-        "-host",
-        host,
-        "-port",
-        str(port),
     ]
-
-    if api_key:
-        cmd.extend(["-config", f"api.key={api_key}"])
-    else:
-        cmd.extend(["-config", "api.disablekey=true"])
-
+    cmd.extend(java_options)
     cmd.extend(
         [
-            "-config",
-            "api.addrs.addr.name=.*",
-            "-config",
-            "api.addrs.addr.regex=true",
+            "-jar",
+            jar_path,
+            "-daemon",
+            "-dir",
+            zap_dir,
+            "-installdir",
+            install_dir,
+            "-host",
+            host,
+            "-port",
+            str(port),
         ]
     )
+
+    for flag in config_flags:
+        cmd.extend(["-config", flag])
 
     console.print(f"[blue]Starting ZAP daemon...[/blue]")
     console.print(f"[gray]JAR: {jar_path}[/gray]")
     console.print(f"[gray]Port: {port}[/gray]")
     console.print(f"[gray]Working dir: {workspace}[/gray]")
+    if use_toml:
+        console.print(f"[gray]Config: TOML ({toml})[/gray]")
 
     try:
         if os.name == "nt":
@@ -133,7 +203,7 @@ def start_daemon(
 
 
 def stop_daemon(
-    workspace: str = typer.Option(
+    workspace: Optional[str] = typer.Option(
         None, "--workspace", "-w", help="ZAP working directory"
     ),
     name: str = typer.Option("zap-daemon", "--name", "-N", help="Process name"),

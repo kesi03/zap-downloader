@@ -15,9 +15,14 @@
     "addons": "ts-node src/index.ts addons",
     "create-config": "ts-node src/index.ts create-config",
     "create-zap-config": "ts-node src/index.ts create-zap-config",
+    "create-toml-config": "ts-node src/index.ts create-toml-config",
     "download-zap": "ts-node src/index.ts download-zap",
     "package": "ts-node src/index.ts package",
-    "workspace": "ts-node src/index.ts workspace"
+    "unpack": "ts-node src/index.ts unpack",
+    "workspace": "ts-node src/index.ts workspace",
+    "daemon": "ts-node src/index.ts daemon",
+    "daemon-start": "ts-node src/index.ts daemon start-daemon",
+    "daemon-stop": "ts-node src/index.ts daemon stop-daemon"
   },
   "repository": {
     "type": "git",
@@ -36,13 +41,14 @@
   },
   "homepage": "https://github.com/kesi03/zap-downloader#readme",
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "axios": "^1.13.6",
     "chalk": "^5.6.2",
     "cli-progress": "^3.12.0",
     "dotenv": "^17.3.1",
     "fs-extra": "^11.3.4",
     "glob": "^13.0.6",
-    "inquirer": "^13.3.2",
+    "inquirer": "^8.2.5",
     "inquirer-fuzzy-path": "^2.3.0",
     "js-yaml": "^4.1.1",
     "p-limit": "^7.3.0",
