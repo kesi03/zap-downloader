@@ -36,7 +36,7 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
       
       - name: Install build dependencies
-        run: pip install build twine
+        run: pip install build twine toml
       
       - name: Version bump
         id: version
