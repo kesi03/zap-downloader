@@ -13,7 +13,7 @@ HOST = "0.0.0.0"
 
 [PATHS]
 # the programme needs to work out where and which the jar is
-JAR_PATH = ""
+JAR_PATH = "workspace/install/zap/ZAP_2.17.0/zap-2.17.0.jar"
 DIR = ".zap"
 # the programme needs to work out correct address
 INSTALL_DIR = "workspace/install"

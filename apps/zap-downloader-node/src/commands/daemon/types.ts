@@ -7,7 +7,7 @@ export interface PM2BusPacket {
   at?: number;
 }
 
-export type PM2ProcessInfo = any;
+export type PM2ProcessInfo = { [key: string]: any } 
 
 export interface TomlConfig {
   ENV?: {

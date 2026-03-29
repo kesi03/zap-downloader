@@ -4,11 +4,11 @@
  * Tests: core -p linux -> addons -c config -> pack -> unpack -> daemon
  */
 
-const { execSync, spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const https = require('https');
+const { execSync, spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const http = require('node:http');
+const https = require('node:https');
 
 const WORKSPACE = path.join(__dirname, '..', 'workspace');
 const ZAP_DIR = path.join(WORKSPACE, 'zap');
@@ -177,7 +177,9 @@ function stepDaemon() {
               'npx', 'ts-node', 'src/index.ts', 'daemon', 'stop-daemon',
               '-w', WORKSPACE
             ], path.join(__dirname, '..', 'apps', 'zap-downloader-node'));
-          } catch (e) {}
+          } catch (e) {
+            console.log('',e)
+          }
           
           setTimeout(() => {
             proc.kill();
@@ -185,7 +187,7 @@ function stepDaemon() {
           }, 2000);
         }
       } catch (e) {
-        // Not ready yet
+        console.log('',e)
       }
     }, 1000);
     
@@ -219,4 +221,4 @@ async function main() {
   }
 }
 
-main();
+await main();

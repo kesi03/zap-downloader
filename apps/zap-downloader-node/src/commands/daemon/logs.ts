@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import fs from "node:fs";
-import path from "node:path";
 import pm2 from "pm2";
 import { Arguments } from "yargs";
 import { PM2BusPacket } from "./types";

@@ -119,7 +119,10 @@ export const startDaemonCommand = {
 
     let jarPath: string | null = null;
 
+    
     if (useToml && config.PATHS?.JAR_PATH) {
+      jarPath = path.join(zapInstallDir,config.PATHS?.JAR_PATH)
+      console.log(jarPath)
       if (fs.existsSync(config.PATHS.JAR_PATH)) {
         jarPath = config.PATHS.JAR_PATH;
       }
