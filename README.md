@@ -537,3 +537,28 @@ npm run daemon -- start -t /opt/zap/workspace/default.toml
 python -m zap_downloader daemon start -t /opt/zap/workspace/default.toml
 ```
 
+---
+
+## Publishing
+
+Both Node.js and Python packages are published via GitHub Actions when version tags are pushed.
+
+### Publishing Node.js Package
+
+1. Update version in `apps/zap-downloader-node/package.json`
+2. Create a tag: `git tag node-v1.0.0 && git push origin node-v1.0.0`
+
+The package will be published to npm automatically.
+
+### Publishing Python Package
+
+1. Update version in `apps/zap-downloader/pyproject.toml`
+2. Create a tag: `git tag python-v1.0.0 && git push origin python-v1.0.0`
+
+The package will be published to PyPI automatically.
+
+### Required Secrets
+
+- **npm**: Add `NPM_TOKEN` to GitHub secrets (from npmjs.com settings)
+- **PyPI**: Uses OIDC trusted publishing (configure in PyPI project settings)
+

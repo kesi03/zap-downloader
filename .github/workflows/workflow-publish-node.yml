@@ -1,0 +1,41 @@
+name: Publish - Node.js
+
+on:
+  push:
+    tags:
+      - 'node-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Enable Corepack + pin pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
+      
+      - name: Install dependencies
+        working-directory: apps/zap-downloader-node
+        run: pnpm install
+      
+      - name: Build
+        working-directory: apps/zap-downloader-node
+        run: pnpm build
+      
+      - name: Publish to npm
+        working-directory: apps/zap-downloader-node
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

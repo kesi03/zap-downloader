@@ -1,0 +1,34 @@
+name: Publish - Python
+
+on:
+  push:
+    tags:
+      - 'python-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install build dependencies
+        run: |
+          pip install build twine
+      
+      - name: Build package
+        working-directory: apps/zap-downloader
+        run: python -m build
+      
+      - name: Publish to PyPI
+        working-directory: apps/zap-downloader
+        run: twine upload dist/*
