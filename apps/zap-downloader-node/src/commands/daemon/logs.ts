@@ -11,7 +11,7 @@ function tailLines(text: string, n: number): string {
 }
 
 export const logsDaemonCommand = {
-  command: "logs-daemon",
+  command: "log",
   describe: "Return PM2 logs for the ZAP daemon",
 
   builder: (yargs: any) => {
@@ -38,6 +38,18 @@ export const logsDaemonCommand = {
         description: "Stream logs (like tail -f)",
         type: "boolean",
         default: false,
+      })
+      .option("err", {
+        alias: "e",
+        description: "Show error log (stderr) instead of output log (stdout)",
+        type: "boolean",
+        default: false,
+      })
+      .option("both", {
+        alias: "b",
+        description: "Show both output and error logs",
+        type: "boolean",
+        default: false,
       });
   },
 
@@ -46,11 +58,15 @@ export const logsDaemonCommand = {
     lines?: number;
     json?: boolean;
     follow?: boolean;
+    err?: boolean;
+    both?: boolean;
   }) => {
     const processName = argv.name || "zap-daemon";
     const maxLines = argv.lines ?? 200;
     const asJson = argv.json ?? false;
     const follow = argv.follow ?? false;
+    const showErr = argv.err ?? false;
+    const showBoth = argv.both ?? false;
 
     console.log(chalk.blue(`Fetching logs for PM2 process: ${processName}`));
 
@@ -121,7 +137,9 @@ export const logsDaemonCommand = {
             2
           )
         );
-      } else {
+      } else if (showErr) {
+        console.log(errContent || chalk.gray("(no errors)"));
+      } else if (showBoth) {
         const combined = [
           chalk.green("=== STDOUT ==="),
           outContent || chalk.gray("(no stdout)"),
@@ -129,8 +147,9 @@ export const logsDaemonCommand = {
           chalk.red("=== STDERR ==="),
           errContent || chalk.gray("(no stderr)"),
         ].join("\n");
-
         console.log(combined);
+      } else {
+        console.log(outContent || chalk.gray("(no output)"));
       }
     } catch (err: any) {
       console.error(chalk.red(`Failed to read logs: ${err.message}`));

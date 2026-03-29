@@ -1,5 +1,6 @@
 import typer
 import os
+import shutil
 import tarfile
 from rich.console import Console
 
@@ -15,6 +16,9 @@ def package(
     workspace: str = typer.Option(
         None, "--workspace", "-w", help="Workspace directory"
     ),
+    toml: str = typer.Option(
+        None, "--toml", "-t", help="Include default toml config in package"
+    ),
 ):
     """Package ZAP and addons into a .tar archive."""
     if not workspace:
@@ -29,6 +33,15 @@ def package(
 
     zap_dir = os.path.join(workspace, "zap")
     addons_dir = os.path.join(workspace, "addons")
+
+    if toml:
+        toml_dest = os.path.join(workspace, "default.toml")
+        if os.path.exists(toml):
+            shutil.copy2(toml, toml_dest)
+            console.print(f"[green]Added default.toml to package[/green]")
+        else:
+            console.print(f"[red]TOML file not found: {toml}[/red]")
+            raise typer.Exit(1)
 
     if not os.path.exists(zap_dir) and not os.path.exists(addons_dir):
         console.print("[red]No ZAP or addons found in workspace[/red]")
@@ -46,5 +59,9 @@ def package(
         if os.path.exists(addons_dir):
             tar.add(addons_dir, arcname="addons")
             console.print(f"[green]Added addons/ to archive[/green]")
+
+        if os.path.exists(os.path.join(workspace, "default.toml")):
+            tar.add(os.path.join(workspace, "default.toml"), arcname="default.toml")
+            console.print(f"[green]Added default.toml to archive[/green]")
 
     console.print(f"[green]Package created: {output}[/green]")

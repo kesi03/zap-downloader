@@ -14,12 +14,18 @@ export const builder = (yargs: any) => {
       description: 'Output .tar archive path',
       type: 'string',
       default: 'zap-package.tar',
+    })
+    .option('toml', {
+      alias: 't',
+      description: 'Include default toml config in package',
+      type: 'string'
     });
 };
 
 export const handler = async (argv: Arguments & {
   workspace: string;
   output?: string;
+  toml?: string;
 }) => {
   const workspace = argv.workspace;
   let outputName = argv.output || 'zap-package.tar';
@@ -32,6 +38,18 @@ export const handler = async (argv: Arguments & {
 
   const zapDir = path.join(workspace, 'zap');
   const addonsDir = path.join(workspace, 'addons');
+
+  if (argv.toml) {
+    const tomlSource = argv.toml;
+    const tomlDest = path.join(workspace, 'default.toml');
+    if (fs.existsSync(tomlSource)) {
+      fs.copyFileSync(tomlSource, tomlDest);
+      console.log(chalk.green(`Added default.toml to package`));
+    } else {
+      console.error(chalk.red(`TOML file not found: ${tomlSource}`));
+      process.exit(1);
+    }
+  }
 
   if (!fs.existsSync(zapDir) && !fs.existsSync(addonsDir)) {
     console.error(chalk.red('No ZAP or addons found in workspace'));
@@ -62,6 +80,10 @@ export const handler = async (argv: Arguments & {
     if (fs.existsSync(addonsDir)) {
       files.push('addons');
       console.log(chalk.green('Added addons/ to archive'));
+    }
+    if (fs.existsSync(path.join(workspace, 'default.toml'))) {
+      files.push('default.toml');
+      console.log(chalk.green('Added default.toml to archive'));
     }
 
     const outputRelPath = path.relative(workspace, outputName);

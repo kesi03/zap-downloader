@@ -1,39 +1,39 @@
 import chalk from "chalk";
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import { Arguments } from "yargs";
 import { getWorkspace } from "../../workspace";
 import pm2 from 'pm2';
 import * as toml from '@iarna/toml';
 import { PM2ProcessInfo, TomlConfig } from "./types";
 
-
-
 function parseTomlConfig(tomlPath: string): TomlConfig {
   const content = fs.readFileSync(tomlPath, 'utf-8');
   return toml.parse(content) as TomlConfig;
 }
 
-function resolveTomlPaths(config: TomlConfig, defaultWorkspace: string): TomlConfig {
-  const workspace = config.ENV?.ZAP_DOWNLOADER_WORKSPACE || defaultWorkspace;
-  
+function resolveTomlPaths(config: TomlConfig, workspace: string): TomlConfig {
   return {
     ...config,
     ENV: {
       ...config.ENV,
-      ZAP_DOWNLOADER_WORKSPACE: workspace,
+      ZAP_DOWNLOADER_WORKSPACE:
+        config.ENV?.ZAP_DOWNLOADER_WORKSPACE || workspace,
     },
     PATHS: {
       ...config.PATHS,
       JAR_PATH: config.PATHS?.JAR_PATH || '',
       DIR: config.PATHS?.DIR || '.zap',
-      INSTALL_DIR: config.PATHS?.INSTALL_DIR || path.join(workspace, 'install').replace(/\\/g, '/'),
+      INSTALL_DIR:
+        config.PATHS?.INSTALL_DIR ||
+        path.join(workspace, 'install').replace(/\\/g, '/'),
     },
   };
 }
 
 export const startDaemonCommand = {
-  command: 'start-daemon',
+  command: 'start',
   describe: 'Start ZAP as a daemon using pm2',
   builder: (yargs: any) => {
     return yargs
@@ -76,6 +76,7 @@ export const startDaemonCommand = {
         default: 'zap-daemon',
       });
   },
+
   handler: async (argv: Arguments & {
     toml?: string;
     dir?: string;
@@ -85,8 +86,10 @@ export const startDaemonCommand = {
     apiKey?: string;
     name?: string;
   }) => {
+
     let config: TomlConfig = {};
     let useToml = false;
+
     let workspace = argv.workspace || getWorkspace();
 
     if (argv.toml) {
@@ -94,80 +97,121 @@ export const startDaemonCommand = {
         console.error(chalk.red(`TOML file not found: ${argv.toml}`));
         process.exit(1);
       }
+
       console.log(chalk.blue(`Using TOML config: ${argv.toml}`));
+
+      const tomlDir = path.dirname(path.resolve(argv.toml));
+      workspace = tomlDir;
+
       config = parseTomlConfig(argv.toml);
       config = resolveTomlPaths(config, workspace);
       useToml = true;
+
+      console.log(chalk.yellow("\n=== DEBUG PATHS ==="));
+      console.log("argv.toml:", path.resolve(argv.toml));
+      console.log("workspace:", workspace);
+      console.log("ENV.ZAP_DOWNLOADER_WORKSPACE:", config.ENV?.ZAP_DOWNLOADER_WORKSPACE);
+      console.log("ENV.ZAP_DOWNLOADER_ZAP_HOME:", config.ENV?.ZAP_DOWNLOADER_ZAP_HOME);
+      console.log("PATHS.INSTALL_DIR:", config.PATHS?.INSTALL_DIR);
+      console.log("PATHS.JAR_PATH:", config.PATHS?.JAR_PATH);
+      console.log("PATHS.DIR:", config.PATHS?.DIR);
+      console.log("====================\n");
     }
 
     const host = useToml ? (config.SERVER?.HOST || '0.0.0.0') : (argv.host || '0.0.0.0');
     const port = useToml ? (config.SERVER?.PORT || 8080) : (argv.port || 8080);
     const apiKey = useToml ? '' : (argv.apiKey || '');
     const processName = argv.name || 'zap-daemon';
-    
-    const zapHomeDir = useToml 
+
+    const zapHomeDir = useToml
       ? (config.ENV?.ZAP_DOWNLOADER_ZAP_HOME || '.zap')
       : '.zap';
 
+    // 🔑 KEY FIX: INSTALL_DIR is resolved relative to workspace when TOML is used
     const zapInstallDir = useToml
-      ? (config.PATHS?.INSTALL_DIR || path.join(workspace, 'install'))
+      ? (
+          path.isAbsolute(config.PATHS?.INSTALL_DIR || "")
+            ? config.PATHS!.INSTALL_DIR!
+            : path.join(workspace, config.PATHS?.INSTALL_DIR || "install")
+        )
       : (argv.dir || path.join(argv.workspace || getWorkspace(), 'zap'));
-    
+
     const workingDir = useToml
       ? (config.ENV?.ZAP_DOWNLOADER_WORKSPACE || workspace)
       : (argv.workspace || getWorkspace());
 
+    console.log(chalk.yellow("\n=== DEBUG RESOLVED DIRECTORIES ==="));
+    console.log("workingDir:", workingDir);
+    console.log("zapInstallDir:", zapInstallDir);
+    console.log("zapHomeDir:", zapHomeDir);
+    console.log("tmpDir:", path.join(workingDir, "tmp"));
+    console.log("zapDir:", path.join(workingDir, zapHomeDir));
+    console.log("====================\n");
+
+    // ───────────────────────────────────────────────
+    // 3. Resolve JAR path (instrumented)
+    // ───────────────────────────────────────────────
     let jarPath: string | null = null;
 
-    
     if (useToml && config.PATHS?.JAR_PATH) {
-      jarPath = path.join(zapInstallDir,config.PATHS?.JAR_PATH)
-      console.log(jarPath)
-      if (fs.existsSync(config.PATHS.JAR_PATH)) {
-        jarPath = config.PATHS.JAR_PATH;
+      const candidate = path.isAbsolute(config.PATHS.JAR_PATH)
+        ? config.PATHS.JAR_PATH
+        : path.join(zapInstallDir, config.PATHS.JAR_PATH);
+
+      console.log(chalk.yellow("Checking JAR candidate:"), candidate);
+      console.log("Exists?", fs.existsSync(candidate));
+
+      if (fs.existsSync(candidate)) {
+        jarPath = candidate;
       }
     }
 
     if (!jarPath && fs.existsSync(zapInstallDir)) {
-      const files = fs.readdirSync(zapInstallDir);
-      for (const f of files) {
-        if (f.endsWith('.jar') && f.startsWith('zap')) {
-          jarPath = path.join(zapInstallDir, f);
-          break;
+      console.log(chalk.yellow("Running fallback recursive search in:"), zapInstallDir);
+
+      const walk = (dir: string): string | null => {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            const found = walk(full);
+            if (found) return found;
+          } else if (entry.isFile() && entry.name.endsWith('.jar') && entry.name.startsWith('zap')) {
+            console.log(chalk.green("Found fallback JAR:"), full);
+            return full;
+          }
         }
-      }
+        return null;
+      };
+
+      jarPath = walk(zapInstallDir);
     }
+
+    console.log(chalk.yellow("Final resolved JAR path:"), jarPath);
 
     if (!jarPath) {
       console.error(chalk.red(`JAR file not found in: ${zapInstallDir}`));
       process.exit(1);
     }
 
-    if (!fs.existsSync(workingDir)) {
-      fs.mkdirSync(workingDir, { recursive: true });
-    }
+    if (!fs.existsSync(workingDir)) fs.mkdirSync(workingDir, { recursive: true });
 
     const tmpDir = path.join(workingDir, 'tmp');
-    if (!fs.existsSync(tmpDir)) {
-      fs.mkdirSync(tmpDir, { recursive: true });
-    }
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
     const zapDir = path.join(workingDir, zapHomeDir);
-    if (!fs.existsSync(zapDir)) {
-      fs.mkdirSync(zapDir, { recursive: true });
-    }
+    if (!fs.existsSync(zapDir)) fs.mkdirSync(zapDir, { recursive: true });
 
     const pluginDir = path.join(zapDir, 'plugin');
     const installPluginDir = path.join(zapInstallDir, 'plugin');
+
     if (!fs.existsSync(pluginDir) && fs.existsSync(installPluginDir)) {
       fs.mkdirSync(pluginDir, { recursive: true });
       const pluginFiles = fs.readdirSync(installPluginDir);
       for (const f of pluginFiles) {
         const src = path.join(installPluginDir, f);
         const dest = path.join(pluginDir, f);
-        if (!fs.existsSync(dest)) {
-          fs.copyFileSync(src, dest);
-        }
+        if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
       }
     }
 
@@ -178,7 +222,7 @@ export const startDaemonCommand = {
     const absZapDir = path.resolve(zapDir);
 
     const javaOptions: string[] = [];
-    
+
     if (useToml && config.JAVA_OPTIONS?.flags) {
       javaOptions.push(...config.JAVA_OPTIONS.flags);
     } else {
@@ -188,7 +232,7 @@ export const startDaemonCommand = {
     javaOptions.push(`-Djava.io.tmpdir="${absTmpDir}"`);
 
     const configFlags: string[] = [];
-    
+
     if (useToml && config.CONFIG?.flags) {
       configFlags.push(...config.CONFIG.flags);
     } else {
@@ -199,26 +243,17 @@ export const startDaemonCommand = {
       );
     }
 
-    const javaFlagsStr = javaOptions.join(' ');
-    const configFlagsStr = configFlags.map(f => `-config ${f}`).join(' ');
-
-    const cmd = [
-      'java',
-      javaFlagsStr,
-      `-jar "${absJarPath}"`,
+    const javaArgs = [
+      ...javaOptions,
+      `-Djava.io.tmpdir="${absTmpDir}"`,
+      '-jar', absJarPath,
       '-daemon',
-      `-dir "${absZapDir}"`,
-      `-installdir "${absInstallDir}"`,
-      `-host ${host}`,
-      `-port ${port}`,
-      configFlagsStr,
-    ].filter(Boolean).join(' ');
-
-    const scriptPath = path.join(workingDir, 'start-zap.sh');
-    const scriptContent = `#!/bin/bash
-${cmd}
-`;
-    fs.writeFileSync(scriptPath, scriptContent);
+      '-dir', absZapDir,
+      '-installdir', absInstallDir,
+      '-host', host,
+      '-port', String(port),
+      ...configFlags.flatMap(f => ['-config', f]),
+    ];
 
     console.log(chalk.blue(`Starting ZAP daemon with pm2...`));
     console.log(chalk.gray(`JAR: ${jarPath}`));
@@ -230,53 +265,36 @@ ${cmd}
 
     try {
       await new Promise<void>((resolve, reject) => {
-        pm2.connect((err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        });
+        pm2.connect(err => err ? reject(err) : resolve());
       });
 
       const processes = await new Promise<PM2ProcessInfo[]>((resolve, reject) => {
-        pm2.list((err, list) => {
-          if (err) reject(err);
-          else resolve(list);
-        });
+        pm2.list((err, list) => err ? reject(err) : resolve(list));
       });
 
       const existing = processes.find(p => p.name === processName);
       if (existing) {
         console.log(chalk.yellow(`Stopping existing pm2 process: ${processName}`));
         await new Promise<void>((resolve, reject) => {
-          pm2.stop(processName, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
+          pm2.stop(processName, err => err ? reject(err) : resolve());
         });
         await new Promise<void>((resolve, reject) => {
-          pm2.delete(processName, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
+          pm2.delete(processName, err => err ? reject(err) : resolve());
         });
       }
 
       await new Promise<void>((resolve, reject) => {
         pm2.start({
           name: processName,
-          script: 'bash',
-          args: scriptPath,
+          script: 'java',
+          args: javaArgs,
           cwd: workingDir,
-        }, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
+        }, err => err ? reject(err) : resolve());
       });
 
       console.log(chalk.green(`ZAP daemon started as "${processName}"`));
       console.log(chalk.blue(`ZAP is starting up on ${host}:${port}`));
+
     } catch (err: any) {
       console.error(chalk.red(`Failed to start ZAP daemon: ${err.message}`));
       process.exit(1);

@@ -16,7 +16,7 @@ export const builder = (yargs: any) => {
     .command(pingDaemonCommand)
     .command(healthDaemonCommand)
     .command(checkStartedDaemonCommand)
-    .demandCommand(1, 'Specify a subcommand: start-daemon, stop-daemon, logs-daemon, status-daemon, ping-daemon, health-daemon , check-started-daemon');
+    .demandCommand(1, 'Specify a subcommand: start, stop, log, status, ping, health, started');
 };
 
 export const handler = () => {};

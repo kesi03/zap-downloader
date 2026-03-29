@@ -3,7 +3,7 @@ import net from "node:net";
 import { Arguments } from "yargs";
 
 export const pingDaemonCommand = {
-  command: "ping-daemon",
+  command: "ping",
   describe: "Check if the ZAP daemon host:port is reachable",
 
   builder: (yargs: any) => {

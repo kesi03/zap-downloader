@@ -14,6 +14,7 @@ from .commands import (
     daemon,
     workspace,
     validate,
+    offline,
 )
 
 app = typer.Typer(
@@ -21,6 +22,33 @@ app = typer.Typer(
     help="OWASP ZAP Downloader - Download and manage ZAP core and addons",
     add_completion=False,
 )
+
+daemon_app = typer.Typer(
+    name="daemon",
+    help="Manage ZAP daemon",
+    add_completion=False,
+)
+
+app.add_typer(daemon_app)
+
+daemon_app.command(name="start")(daemon.start_daemon)
+daemon_app.command(name="stop")(daemon.stop_daemon)
+daemon_app.command(name="status")(daemon.status_daemon)
+daemon_app.command(name="ping")(daemon.ping_daemon)
+daemon_app.command(name="health")(daemon.health_daemon)
+daemon_app.command(name="started")(daemon.check_started_daemon)
+daemon_app.command(name="log")(daemon.logs_daemon)
+
+offline_app = typer.Typer(
+    name="offline",
+    help="Create offline ZAP package and unpack it",
+    add_completion=False,
+)
+
+app.add_typer(offline_app)
+
+offline_app.command(name="pack")(offline.pack_offline)
+offline_app.command(name="unpack")(offline.unpack_offline)
 
 app.command(name="core")(core.core)
 app.command(name="addons")(addons.addons)
@@ -32,8 +60,6 @@ app.command(name="create-toml-config")(create_toml_config.create_toml_config)
 app.command(name="download-zap")(download_zap.download_zap)
 app.command(name="package")(package.package)
 app.command(name="unpack")(unpack.unpack)
-app.command(name="start-daemon")(daemon.start_daemon)
-app.command(name="stop-daemon")(daemon.stop_daemon)
 app.command(name="workspace")(workspace.workspace)
 app.command(name="validate")(validate.validate)
 

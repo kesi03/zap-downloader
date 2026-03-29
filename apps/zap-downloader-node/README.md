@@ -190,8 +190,13 @@ npm run unpack -- -i linux-zap.tar -o ./zap-install
 Start or stop ZAP as a daemon using pm2:
 
 ```bash
-npm run daemon -- start-daemon [-d dir] [-w workspace] [-P port] [-k api-key]
-npm run daemon -- stop-daemon
+npm run daemon -- start [-d dir] [-w workspace] [-P port] [-k api-key]
+npm run daemon -- stop
+npm run daemon -- log
+npm run daemon -- status
+npm run daemon -- ping
+npm run daemon -- health
+npm run daemon -- started
 ```
 
 Options:
@@ -204,10 +209,16 @@ Options:
 Examples:
 ```bash
 # Start daemon
-npm run daemon -- start-daemon -d ./zap/ZAP_2.17.0 -w ./workspace -P 8080
+npm run daemon -- start -d ./zap/ZAP_2.17.0 -w ./workspace -P 8080
 
 # Stop daemon
-npm run daemon -- stop-daemon
+npm run daemon -- stop
+
+# View logs
+npm run daemon -- log
+
+# Health check
+npm run daemon -- health
 ```
 
 The daemon runs with:

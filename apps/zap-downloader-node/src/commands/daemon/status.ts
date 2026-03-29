@@ -3,7 +3,7 @@ import pm2 from "pm2";
 import { Arguments } from "yargs";
 
 export const statusDaemonCommand = {
-  command: "status-daemon",
+  command: "status",
   describe: "Show PM2 status for the ZAP daemon",
 
   builder: (yargs: any) => {

@@ -221,16 +221,22 @@ This command:
 3. Moves addons to the `plugin` folder (if not already present)
 4. Removes the empty `addons` folder
 
-### Start/Stop Daemon
+### Daemon Management
 
-Start or stop ZAP as a daemon:
+Start, stop, and manage ZAP as a daemon:
 
 ```bash
-zap-downloader start-daemon [-d dir] [-w workspace] [-P port] [-k api-key]
-zap-downloader stop-daemon [-w workspace]
+zap-downloader daemon <command> [options]
+```
+
+#### Start Daemon
+
+```bash
+zap-downloader daemon start [-t toml] [-d dir] [-w workspace] [-P port] [-k api-key]
 ```
 
 Options:
+- `-t`, `--toml` - Path to TOML configuration file
 - `-d`, `--dir` - ZAP installation directory (where zap.jar is)
 - `-w`, `--workspace` - Working directory
 - `-P`, `--port` - Proxy port (default: 8080)
@@ -239,16 +245,149 @@ Options:
 
 Examples:
 ```bash
-# Start daemon
-zap-downloader start-daemon -d ./zap/ZAP_2.17.0 -w ./workspace -P 8080
+# Start daemon with TOML config
+zap-downloader daemon start -t ./workspace/default.toml
 
-# Stop daemon
-zap-downloader stop-daemon
+# Start daemon with manual options
+zap-downloader daemon start -d ./install -w ./workspace -P 8080
 ```
 
-The daemon runs with:
-- API key disabled (`api.disablekey=true`)
-- All hosts allowed (`api.addrs.addr.name=.*`)
+#### Stop Daemon
+
+```bash
+zap-downloader daemon stop [-w workspace] [-N name]
+```
+
+#### Status Daemon
+
+```bash
+zap-downloader daemon status [-N name]
+```
+
+#### Logs Daemon
+
+```bash
+zap-downloader daemon log [-w workspace] [-n lines] [-e] [-b]
+```
+
+Options:
+- `-w`, `--workspace` - Workspace directory
+- `-n`, `--lines` - Number of log lines (default: 200)
+- `-e`, `--err` - Show error log
+- `-b`, `--both` - Show both output and error logs
+
+Examples:
+```bash
+# View last 50 lines
+zap-downloader daemon log -n 50
+
+# View error log only
+zap-downloader daemon log -e
+
+# View both logs
+zap-downloader daemon log -b
+```
+
+#### Ping Daemon
+
+```bash
+zap-downloader daemon ping [-H host] [-P port] [-T timeout] [--json]
+```
+
+Options:
+- `-H`, `--host` - Host to check (default: 127.0.0.1)
+- `-P`, `--port` - Port to check (default: 8080)
+- `-T`, `--timeout` - Timeout in milliseconds (default: 2000)
+- `--json` - Return as JSON
+
+#### Health Daemon
+
+```bash
+zap-downloader daemon health [-H host] [-P port]
+```
+
+Check ZAP health via `/core/view/version/` API.
+
+#### Check Started Daemon
+
+```bash
+zap-downloader daemon started [-H host] [-P port] [-T timeout]
+```
+
+Wait until ZAP daemon responds to API.
+
+Examples:
+```bash
+# Wait up to 60 seconds for ZAP to start
+zap-downloader daemon started -T 60
+```
+
+---
+
+### Package with TOML Config
+
+Include a default TOML config in the package:
+
+```bash
+zap-downloader package [-o output.tar] [-w workspace] [-t toml]
+```
+
+Options:
+- `-o`, `--output` - Output `.tar` archive path
+- `-w`, `--workspace` - Workspace directory
+- `-t`, `--toml` - Path to TOML config to include
+
+Example:
+```bash
+zap-downloader package -o ./zap-package.tar -t ./config/default.toml
+```
+
+### Offline Package
+
+Create a complete offline ZAP package that can run without internet. This downloads the latest ZAP core and ALL addons (release + beta + alpha), disables auto-update, and packages everything into a tar file.
+
+```bash
+zap-downloader offline <command>
+```
+
+#### Pack Offline Package
+
+```bash
+zap-downloader offline pack [-o output.tar] [-p platform]
+```
+
+Options:
+- `-o`, `--output` - Output `.tar` archive path (default: `zap-offline.tar`)
+- `-p`, `--platform` - Platform for ZAP core (default: `linux`)
+
+Example:
+```bash
+# Create offline package
+zap-downloader offline pack -o zap-offline.tar
+
+# Create for Windows
+zap-downloader offline pack -o zap-offline.tar -p windows
+```
+
+#### Unpack Offline Package
+
+```bash
+zap-downloader offline unpack -i <input.tar> [-o output-dir]
+```
+
+Options:
+- `-i`, `--input` - Path to the `.tar` package file (required)
+- `-o`, `--output` - Output directory (default: extracted archive name)
+
+Example:
+```bash
+zap-downloader offline unpack -i zap-offline.tar -o /opt/zap
+```
+
+Then start ZAP with:
+```bash
+zap-downloader daemon start -t /opt/zap/workspace/default.toml
+```
 
 ### Workspace Management
 
@@ -292,7 +431,8 @@ zap-downloader/
 │       ├── package.py
 │       ├── unpack.py
 │       ├── validate.py
-│       └── workspace.py
+│       ├── workspace.py
+│       └── daemon.py
 └── pyproject.toml
 ```
 

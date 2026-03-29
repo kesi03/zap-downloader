@@ -4,7 +4,7 @@ import pm2 from 'pm2';
 import { PM2ProcessInfo } from "./types";
 
 export const stopDaemonCommand = {
-  command: 'stop-daemon',
+  command: 'stop',
   describe: 'Stop ZAP daemon managed by pm2',
   builder: (yargs: any) => {
     return yargs

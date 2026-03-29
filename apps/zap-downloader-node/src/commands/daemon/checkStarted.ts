@@ -3,7 +3,7 @@ import { Arguments } from "yargs";
 import { httpGet } from "./httpHelper";
 
 export const checkStartedDaemonCommand = {
-  command: "check-started-daemon",
+  command: "started",
   describe: "Wait until ZAP daemon responds to /core/view/version/",
 
   builder: (yargs: any) => {

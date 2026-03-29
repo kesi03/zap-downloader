@@ -51,6 +51,10 @@ import {
   createTomlConfigDescribe,
   createTomlConfigBuilder,
   createTomlConfigHandler,
+  offlineCommand,
+  offlineDescribe,
+  offlineBuilder,
+  offlineHandler,
 } from './commands';
 import { getWorkspace } from './workspace';
 
@@ -138,6 +142,13 @@ const createTomlConfigModule: CommandModule = {
   handler: createTomlConfigHandler as any,
 };
 
+const offlineModule: CommandModule = {
+  command: offlineCommand,
+  describe: offlineDescribe,
+  builder: offlineBuilder,
+  handler: offlineHandler as any,
+};
+
 const argv = yargs(process.argv.slice(2))
   .scriptName('zap-downloader')
   .usage('$0 <command> [options]')
@@ -162,6 +173,7 @@ const argv = yargs(process.argv.slice(2))
   .command(daemonModule)
   .command(workspaceModule)
   .command(createTomlConfigModule)
+  .command(offlineModule)
   .help()
   .demandCommand(1, 'Please specify a command')
   .parse();

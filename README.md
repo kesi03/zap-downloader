@@ -150,7 +150,7 @@ npm run download-zap -- -c my-zap.yaml
 ### 8. Package Workspace (.tar.gz)
 
 ```bash
-npm run package -- [-o <output-file>] [-n <package-name>]
+npm run package -- [-o <output-file>] [-n <package-name>] [-t <toml>]
 ```
 
 Examples:
@@ -159,6 +159,7 @@ Examples:
 npm run package
 npm run package -- -n my-zap
 npm run package -- -o custom-name.tar.gz
+npm run package -- -t ./config/default.toml   # Include default.toml
 ```
 
 ---
@@ -166,13 +167,14 @@ npm run package -- -o custom-name.tar.gz
 ### 9. Package Workspace (.tar)
 
 ```bash
-npm run package -- [-o <output-file>]
+npm run package -- [-o <output-file>] [-t <toml>]
 ```
 
 Example:
 
 ```bash
 npm run package -- -o my-zap.tar
+npm run package -- -o my-zap.tar -t ./config/default.toml
 ```
 
 ---
@@ -191,25 +193,33 @@ npm run unpack -- -i linux-zap.tar -o ./zap-install
 
 ---
 
-## 11. Daemon Management (PM2)
+## 11. Daemon Management
 
 Manage ZAP as a background daemon.
 
+### Node.js (PM2)
+
 ```bash
 npm run daemon -- <subcommand> [options]
+```
+
+### Python (subprocess)
+
+```bash
+zap-downloader <subcommand> [options]
 ```
 
 ### Daemon Summary Table
 
 | Subcommand | Purpose | Key Options |
 |-----------|----------|-------------|
-| `start-daemon` | Start ZAP as a PM2 daemon | `--dir`, `--workspace`, `--port`, `--api-key`, `--toml`, `--name` |
-| `stop-daemon` | Stop the PM2 process | `--name` |
-| `logs-daemon` | View logs | `--lines`, `--json`, `--follow`, `--name` |
-| `status-daemon` | Show PM2 status | `--json`, `--name` |
-| `ping-daemon` | Check if host:port is reachable | `--host`, `--port`, `--json`, `--timeout` |
-| `health-daemon` | Call `/core/view/version/` | `--host`, `--port` |
-| `check-started-daemon` | Wait until ZAP responds | `--host`, `--port`, `--timeout` |
+| `start` | Start ZAP daemon | `--dir`, `--workspace`, `--port`, `--api-key`, `--toml`, `--name` |
+| `stop` | Stop the daemon process | `--name` |
+| `log` | View logs | `--lines`, `--json`, `--follow` (Node), `-e`/`-b` (Python), `--name` |
+| `status` | Show daemon status | `--json`, `--name` |
+| `ping` | Check if host:port is reachable | `--host`, `--port`, `--json`, `--timeout` |
+| `health` | Call `/core/view/version/` | `--host`, `--port` |
+| `started` | Wait until ZAP responds | `--host`, `--port`, `--timeout` |
 
 ---
 
@@ -217,47 +227,112 @@ npm run daemon -- <subcommand> [options]
 
 ### Start daemon
 ```bash
-npm run daemon -- start-daemon -d ./install -w ./workspace -P 8080
+# Node.js (npm)
+npm run daemon -- start -d ./install -w ./workspace -P 8080
+
+# Node.js (pnpm)
+pnpm daemon:start -d ./install -w ./workspace -P 8080
+pnpm daemon:start -t ./workspace/default.toml
+
+# Python
+python -m zap_downloader daemon start -d ./install -w ./workspace -P 8080
+python -m zap_downloader daemon start -t ./workspace/default.toml
 ```
 
 ### Stop daemon
 ```bash
-npm run daemon -- stop-daemon
+# Node.js (npm)
+npm run daemon -- stop
+
+# Node.js (pnpm)
+pnpm daemon:stop
+
+# Python
+python -m zap_downloader daemon stop
 ```
 
 ### Logs (last 200 lines)
 ```bash
-npm run daemon -- logs-daemon --lines 200
+# Node.js (npm)
+npm run daemon -- log --lines 200
+
+# Node.js (pnpm)
+pnpm daemon:log
+
+# Python
+python -m zap_downloader daemon log -n 200
 ```
 
-### Stream logs
+### Logs - error only
 ```bash
-npm run daemon -- logs-daemon --follow
+# Node.js (npm)
+npm run daemon -- log --err
+
+# Node.js (pnpm)
+pnpm daemon:log -e
+
+# Python
+python -m zap_downloader daemon log -e
 ```
 
-### Logs as JSON
+### Stream logs (Node.js only)
 ```bash
-npm run daemon -- logs-daemon --json
+npm run daemon -- log --follow
+pnpm daemon:log -f
+```
+
+### Logs as JSON (Node.js only)
+```bash
+npm run daemon -- log --json
+pnpm daemon:log --json
 ```
 
 ### Status
 ```bash
-npm run daemon -- status-daemon
+# Node.js (npm)
+npm run daemon -- status
+
+# Node.js (pnpm)
+pnpm daemon:status
+
+# Python
+python -m zap_downloader daemon status
 ```
 
 ### Ping host:port
 ```bash
-npm run daemon -- ping-daemon -H 127.0.0.1 -P 8080
+# Node.js (npm)
+npm run daemon -- ping -H 127.0.0.1 -P 8080
+
+# Node.js (pnpm)
+pnpm daemon:ping -H 127.0.0.1 -P 8080
+
+# Python
+python -m zap_downloader daemon ping -H 127.0.0.1 -P 8080
 ```
 
 ### Health check
 ```bash
-npm run daemon -- health-daemon
+# Node.js (npm)
+npm run daemon -- health
+
+# Node.js (pnpm)
+pnpm daemon:health
+
+# Python
+python -m zap_downloader daemon health
 ```
 
 ### Wait until ZAP is ready
 ```bash
-npm run daemon -- check-started-daemon -P 8080 -T 60
+# Node.js (npm)
+npm run daemon -- started -P 8080 -T 60
+
+# Node.js (pnpm)
+pnpm daemon:started -P 8080 -T 60
+
+# Python
+python -m zap_downloader daemon started -P 8080 -T 60
 ```
 
 ---
@@ -267,7 +342,11 @@ npm run daemon -- check-started-daemon -P 8080 -T 60
 Use with:
 
 ```bash
-npm run daemon -- start-daemon --toml ./zap.toml
+# Node.js
+npm run daemon -- start --toml ./zap.toml
+
+# Python
+zap-downloader daemon start --toml ./zap.toml
 ```
 
 ### `zap.toml`
@@ -313,11 +392,30 @@ flags = [
 
 ---
 
-## 12. Workspace Management
+## 12. Package (Python)
 
 ```bash
+zap-downloader package [-o <output-file>] [-w <workspace>] [-t <toml>]
+```
+
+Example:
+
+```bash
+zap-downloader package -o my-zap.tar -t ./config/default.toml
+```
+
+---
+
+## 13. Workspace Management
+
+```bash
+# Node.js
 npm run workspace
 npm run workspace --show
+
+# Python
+zap-downloader workspace
+zap-downloader workspace ./my-workspace
 ```
 
 ---
@@ -336,7 +434,7 @@ zap-workspace/
 
 ---
 
-## NPM Scripts
+## NPM Scripts (Node.js)
 
 | Script | Description |
 |--------|-------------|
@@ -352,7 +450,22 @@ zap-workspace/
 | `pnpm run package` | Package workspace |
 | `pnpm run unpack` | Unpack archive |
 | `pnpm run daemon` | Manage ZAP daemon |
+| `pnpm run daemon:start` | Start daemon |
+| `pnpm run daemon:stop` | Stop daemon |
+| `pnpm run daemon:log` | View logs |
+| `pnpm run daemon:status` | Show status |
+| `pnpm run daemon:ping` | Ping daemon |
+| `pnpm run daemon:health` | Health check |
+| `pnpm run daemon:started` | Wait for daemon |
 | `pnpm run workspace` | Manage workspace |
+
+## Python Scripts
+
+All commands use `zap-downloader` CLI:
+
+```bash
+zap-downloader <command> [options]
+```
 
 ---
 
@@ -378,4 +491,49 @@ npm run package -- -n my-zap
 This produces:
 
 - `my-zap.tar.gz` containing the full workspace
+
+---
+
+## 13. Offline Package
+
+Create a complete offline ZAP package that can run without internet. Downloads the latest ZAP core and ALL addons (release + beta + alpha), disables auto-update, and packages everything.
+
+### Pack Offline Package
+
+```bash
+# Node.js (npm)
+npm run offline -- pack -o zap-offline.tar
+
+# Node.js (pnpm)
+pnpm offline:pack -o zap-offline.tar
+
+# Python
+python -m zap_downloader offline pack -o zap-offline.tar
+```
+
+Options:
+- `-o`, `--output` - Output `.tar` archive path
+- `-p`, `--platform` - Platform (linux, windows, mac)
+
+### Unpack Offline Package
+
+```bash
+# Node.js (npm)
+npm run offline -- unpack -i zap-offline.tar -o /opt/zap
+
+# Node.js (pnpm)
+pnpm offline:unpack -i zap-offline.tar -o /opt/zap
+
+# Python
+python -m zap_downloader offline unpack -i zap-offline.tar -o /opt/zap
+```
+
+Then start ZAP:
+```bash
+# Node.js
+npm run daemon -- start -t /opt/zap/workspace/default.toml
+
+# Python
+python -m zap_downloader daemon start -t /opt/zap/workspace/default.toml
+```
 

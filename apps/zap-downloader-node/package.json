@@ -21,13 +21,16 @@
     "unpack": "ts-node src/index.ts unpack",
     "workspace": "ts-node src/index.ts workspace",
     "daemon": "ts-node src/index.ts daemon",
-    "daemon:start": "ts-node src/index.ts daemon start-daemon",
-    "daemon:stop": "ts-node src/index.ts daemon stop-daemon",
-    "daemon:status": "ts-node src/index.ts daemon logs-daemon",
-    "daemon:logs": "ts-node src/index.ts daemon status-daemon",
-    "daemon:ping": "ts-node src/index.ts daemon ping-daemon",
-    "daemon:health": "ts-node src/index.ts daemon health-daemon",
-    "daemon:check-started": "ts-node src/index.ts daemon check-started-daemon"
+    "daemon:start": "ts-node src/index.ts daemon start",
+    "daemon:stop": "ts-node src/index.ts daemon stop",
+    "daemon:status": "ts-node src/index.ts daemon status",
+    "daemon:log": "ts-node src/index.ts daemon log",
+    "daemon:ping": "ts-node src/index.ts daemon ping",
+    "daemon:health": "ts-node src/index.ts daemon health",
+    "daemon:started": "ts-node src/index.ts daemon started",
+    "offline": "ts-node src/index.ts offline",
+    "offline:pack": "ts-node src/index.ts offline pack",
+    "offline:unpack": "ts-node src/index.ts offline unpack"
   },
   "repository": {
     "type": "git",

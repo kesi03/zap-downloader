@@ -3,7 +3,7 @@ import { Arguments } from "yargs";
 import { httpGet } from "./httpHelper";
 
 export const healthDaemonCommand = {
-  command: "health-daemon",
+  command: "health",
   describe: "Check ZAP daemon health via /core/view/version/",
 
   builder: (yargs: any) => {
