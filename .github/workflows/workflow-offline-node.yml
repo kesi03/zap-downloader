@@ -1,6 +1,7 @@
 name: Offline Test - Node.js
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
