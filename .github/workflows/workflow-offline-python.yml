@@ -1,0 +1,65 @@
+name: Offline Test - Python
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader/**'
+
+jobs:
+  offline-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install Java
+        run: sudo apt-get update && sudo apt-get install -y default-jre
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e apps/zap-downloader
+          pip install requests
+      
+      - name: Create offline package
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader offline pack -o zap-offline-python.tar
+      
+      - name: Unpack offline package
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader offline unpack -i zap-offline-python.tar -o test-unpack-python
+      
+      - name: Start daemon
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader daemon start -t test-unpack-python/workspace/default.toml
+      
+      - name: Wait for daemon to start
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader daemon started --timeout 120
+      
+      - name: Ping daemon
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader daemon ping
+      
+      - name: Stop daemon
+        working-directory: apps/zap-downloader
+        run: python -m zap_downloader daemon stop
+      
+      - name: Upload offline package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-offline-python
+          path: apps/zap-downloader/zap-offline-python.tar
+          retention-days: 7

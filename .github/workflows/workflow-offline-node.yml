@@ -1,0 +1,74 @@
+name: Offline Test - Node.js
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader-node/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/zap-downloader-node/**'
+
+jobs:
+  offline-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Enable Corepack + pin pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
+      
+      - name: Install Java
+        run: sudo apt-get update && sudo apt-get install -y default-jre
+      
+      - name: Install dependencies
+        working-directory: apps/zap-downloader-node
+        run: |
+          pnpm install
+          pnpm add -g pm2
+      
+      - name: Build
+        working-directory: apps/zap-downloader-node
+        run: pnpm build
+      
+      - name: Create offline package
+        working-directory: apps/zap-downloader-node
+        run: pnpm offline:pack
+      
+      - name: Unpack offline package
+        working-directory: apps/zap-downloader-node
+        run: pnpm ts-node src/index.ts offline unpack -i zap-offline.tar -o test-unpack
+      
+      - name: Start daemon
+        working-directory: apps/zap-downloader-node
+        run: pnpm ts-node src/index.ts daemon start -t test-unpack/workspace/default.toml
+      
+      - name: Wait for daemon to start
+        working-directory: apps/zap-downloader-node
+        run: pnpm ts-node src/index.ts daemon started --timeout 120
+      
+      - name: Ping daemon
+        working-directory: apps/zap-downloader-node
+        run: pnpm ts-node src/index.ts daemon ping
+      
+      - name: Stop daemon
+        working-directory: apps/zap-downloader-node
+        run: pnpm ts-node src/index.ts daemon stop
+      
+      - name: Upload offline package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-offline-node
+          path: apps/zap-downloader-node/zap-offline.tar
+          retention-days: 7
