@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g., 1.0.0)'
+        description: 'Version to publish (e.g., 1.0.0, patch, minor, major)'
         required: true
-        type: string
+        default: 'patch'
   push:
     tags:
       - 'node-v*'
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     
     steps:
       - name: Checkout code
@@ -26,27 +26,44 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
       
       - name: Enable Corepack + pin pnpm
         run: |
           corepack enable
           corepack prepare pnpm@9.0.0 --activate
       
+      - name: Configure Git
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git
+      
       - name: Install dependencies
         working-directory: apps/zap-downloader-node
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       
       - name: Build
         working-directory: apps/zap-downloader-node
         run: pnpm build
       
-      - name: Configure npm authentication
+      - name: Version bump
+        id: version
         working-directory: apps/zap-downloader-node
         run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          if [[ "${{ inputs.version }}" == "patch" ]] || [[ "${{ inputs.version }}" == "minor" ]] || [[ "${{ inputs.version }}" == "major" ]]; then
+            pnpm version ${{ inputs.version }}
+          else
+            pnpm version ${{ inputs.version }} --no-git-tag-version
+          fi
+          echo "version=$(node -p 'require(\"./package.json\").version')" >> $GITHUB_OUTPUT
       
       - name: Publish to npm
         working-directory: apps/zap-downloader-node
-        run: npm publish --access public
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Push Changes and Tag
+        working-directory: apps/zap-downloader-node
+        run: git push origin main --follow-tags
