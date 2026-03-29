@@ -1,6 +1,12 @@
 name: Publish - Node.js
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        type: string
   push:
     tags:
       - 'node-v*'
