@@ -1,6 +1,7 @@
 import os
 import hashlib
 import aiohttp
+import requests
 from pathlib import Path
 from typing import Optional
 from tqdm import tqdm
@@ -29,28 +30,42 @@ async def download_file(
     print(f"Downloading {url}...")
 
     proxy = proxy_url or get_proxy_url()
+    headers = {
+        "User-Agent": "zap-downloader/1.0",
+        "Accept": "application/octet-stream",
+    }
 
-    headers = {"User-Agent": "zap-downloader/1.0"}
+    response = requests.get(
+        url,
+        headers=headers,
+        proxy=proxy,
+        allow_redirects=True,
+        stream=True,
+        timeout=300,
+    )
+    print(f"Response URL: {response.url}")
+    print(f"Response status: {response.status_code}")
+    response.raise_for_status()
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(
-            url, timeout=aiohttp.ClientTimeout(total=300), proxy=proxy
-        ) as response:
-            response.raise_for_status()
-            total_size = int(response.headers.get("content-length", 0))
+    total_size = int(response.headers.get("content-length", 0))
+    print(f"Content-Length: {total_size}")
 
-            with open(output_path, "wb") as f:
-                with tqdm(
-                    total=total_size,
-                    unit="B",
-                    unit_scale=True,
-                    desc=os.path.basename(output_path),
-                ) as pbar:
-                    async for chunk in response.content.iter_chunked(chunk_size):
-                        f.write(chunk)
-                        pbar.update(len(chunk))
-                f.flush()
-                os.fsync(f.fileno())
+    if total_size == 0:
+        raise ValueError(f"Server returned empty file (0 bytes). URL: {response.url}")
+
+    with open(output_path, "wb") as f:
+        with tqdm(
+            total=total_size,
+            unit="B",
+            unit_scale=True,
+            desc=os.path.basename(output_path),
+        ) as pbar:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
+                    pbar.update(len(chunk))
+        f.flush()
+        os.fsync(f.fileno())
 
     print(f"Downloaded to {output_path}")
 
