@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import chalk from 'chalk';
 import { Arguments } from 'yargs';
+import { deprecate } from 'util';
 
 function isWindows(): boolean {
   return process.platform === 'win32';
@@ -208,7 +209,7 @@ export const firefoxCommand = {
 
 export const command = 'dependencies';
 export const describe = 'Install browser dependencies';
-
+// @deprecate('The "dependencies" command is deprecated and will be removed in future versions. Please install browsers and drivers manually.', '1.0.0')
 export const builder = (yargs: any) => {
   return yargs
     .command(chromeCommand)
