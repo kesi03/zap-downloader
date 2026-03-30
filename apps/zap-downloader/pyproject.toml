@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zap-downloader"
-version = "1.0.2"
+version = "1.0.3"
 description = "OWASP ZAP Downloader - Download and manage ZAP core and addons"
 readme = "README.md"
 license = {text = "MIT"}
