@@ -19,13 +19,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e apps/zap-downloader
+          pip install --break-system-packages -e apps/zap-downloader
       
       - name: Test chrome command
-        run: sudo zap-downloader dependencies chrome
+        run: python -m zap_downloader dependencies chrome
       
       - name: Test firefox command
-        run: sudo zap-downloader dependencies firefox
+        run: python -m zap_downloader dependencies firefox
 
   windows:
     runs-on: windows-latest

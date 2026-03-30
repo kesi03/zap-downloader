@@ -30,10 +30,10 @@ jobs:
         run: pnpm build
       
       - name: Test chrome command
-        run: sudo pnpm ts-node src/index.ts dependencies chrome
+        run: pnpm ts-node src/index.ts dependencies chrome
       
       - name: Test firefox command
-        run: sudo pnpm ts-node src/index.ts dependencies firefox
+        run: pnpm ts-node src/index.ts dependencies firefox
 
   windows:
     runs-on: windows-latest
