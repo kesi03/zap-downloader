@@ -30,9 +30,11 @@ jobs:
         run: pnpm build
       
       - name: Test chrome command
+        working-directory: apps/zap-downloader-node
         run: pnpm ts-node src/index.ts dependencies chrome
       
       - name: Test firefox command
+        working-directory: apps/zap-downloader-node
         run: pnpm ts-node src/index.ts dependencies firefox
 
   windows:
@@ -59,7 +61,9 @@ jobs:
         run: pnpm build
       
       - name: Test chrome command
+        working-directory: apps/zap-downloader-node
         run: pnpm ts-node src/index.ts dependencies chrome
       
       - name: Test firefox command
+        working-directory: apps/zap-downloader-node
         run: pnpm ts-node src/index.ts dependencies firefox
