@@ -6,6 +6,7 @@ import { fetchZapVersions } from '../../parser';
 import { downloadFile, formatBytes } from '../../downloader';
 import { Arguments } from 'yargs';
 import { getProxyUrl } from '../../proxy';
+import { setDevOpsVariables } from '../../utils/devops';
 
 export const packOfflineCommand = {
   command: 'pack',
@@ -156,6 +157,16 @@ flags = [
 
       const stats = fs.statSync(finalOutput);
       console.log(chalk.green(`Package created: ${finalOutput}`));
+      
+      console.log(chalk.green(`File: ${outputName}`));
+      
+      setDevOpsVariables([
+        { name: 'OFFLINE_PACKAGE_NAME', value: outputName },
+        { name: 'OFFLINE_PACKAGE_PATH', value: finalOutput },
+        { name: 'OFFLINE_PACKAGE_SIZE', value: stats.size.toString() },
+      ]);
+
+
       console.log(chalk.blue(`Size: ${formatBytes(stats.size)}`));
 
     } catch (err: any) {

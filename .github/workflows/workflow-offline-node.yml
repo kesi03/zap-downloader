@@ -43,12 +43,14 @@ jobs:
       
       - name: Create offline package
         working-directory: apps/zap-downloader-node
-        run: pnpm offline:pack
-      
+        run: |
+          pnpm offline:pack
+          echo "OFFLINE_PACKAGE_PATH=$(ls zap-offline-*.tar | head -n 1)" >> $GITHUB_ENV
+       
       - name: Unpack offline package
         working-directory: apps/zap-downloader-node
-        run: pnpm ts-node src/index.ts offline unpack -i zap-offline.tar -o test-unpack
-      
+        run: pnpm ts-node src/index.ts offline unpack -i "${{ env.OFFLINE_PACKAGE_PATH }}" -o test-unpack
+       
       - name: Start daemon
         working-directory: apps/zap-downloader-node
         run: pnpm ts-node src/index.ts daemon start -t test-unpack/workspace/default.toml
@@ -69,5 +71,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-offline-node
-          path: apps/zap-downloader-node/zap-offline.tar
+          path: apps/zap-downloader-node/${{ env.OFFLINE_PACKAGE_PATH }}
           retention-days: 7
