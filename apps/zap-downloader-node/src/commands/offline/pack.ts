@@ -15,9 +15,8 @@ export const packOfflineCommand = {
     return yargs
       .option('output', {
         alias: 'o',
-        description: 'Output .tar archive path',
+        description: 'Output .tar archive path (default: zap-offline-{platform}-{version}.tar)',
         type: 'string',
-        default: 'zap-offline.tar',
       })
       .option('platform', {
         alias: 'p',
@@ -33,7 +32,6 @@ export const packOfflineCommand = {
     proxy?: string;
   }) => {
     const platform = argv.platform || 'linux';
-    const outputName = argv.output || 'zap-offline.tar';
     const proxy = argv.proxy || getProxyUrl();
 
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zap-offline-'));
@@ -59,8 +57,11 @@ export const packOfflineCommand = {
         process.exit(1);
       }
 
+      const version = zapVersions.core.version;
+      const outputName = argv.output || `zap-offline-${platform}-${version}.tar`;
+
       console.log(`Platform: ${platform}`);
-      console.log(`Version: ${zapVersions.core.version}`);
+      console.log(`Version: ${version}`);
       console.log(`Size: ${formatBytes(platformData.size)}`);
 
       const coreOutput = path.join(zapDir, platformData.file);
