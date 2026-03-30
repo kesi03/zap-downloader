@@ -36,15 +36,19 @@ jobs:
       
       - name: Create offline package
         working-directory: apps/zap-downloader
-        run: python -m zap_downloader offline pack -o zap-offline-python.tar
+        run: python -m zap_downloader offline pack
+      
+      - name: Find offline package
+        working-directory: apps/zap-downloader
+        run: echo "OFFLINE_PACKAGE_PATH=$(ls zap-offline-*.tar | head -n 1)" >> $GITHUB_ENV
       
       - name: Unpack offline package
         working-directory: apps/zap-downloader
-        run: python -m zap_downloader offline unpack -i zap-offline-python.tar -o test-unpack-python
+        run: python -m zap_downloader offline unpack -i "${{ env.OFFLINE_PACKAGE_PATH }}" -o test-unpack
       
       - name: Start daemon
         working-directory: apps/zap-downloader
-        run: python -m zap_downloader daemon start -t test-unpack-python/workspace/default.toml
+        run: python -m zap_downloader daemon start -t test-unpack/workspace/default.toml
       
       - name: Wait for daemon to start
         working-directory: apps/zap-downloader
@@ -62,5 +66,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-offline-python
-          path: apps/zap-downloader/zap-offline-python.tar
+          path: apps/zap-downloader/${{ env.OFFLINE_PACKAGE_PATH }}
           retention-days: 7

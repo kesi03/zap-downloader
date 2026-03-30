@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 import asyncio
 from rich.console import Console
+from ..utils.devops import set_devops_variables
 
 console = Console()
 
@@ -150,6 +151,16 @@ flags = [
 
             size = os.path.getsize(final_output)
             console.print(f"[green]Package created: {final_output}[/green]")
+            console.print(f"[green]File: {output}[/green]")
+
+            set_devops_variables(
+                [
+                    {"name": "OFFLINE_PACKAGE_NAME", "value": output},
+                    {"name": "OFFLINE_PACKAGE_PATH", "value": final_output},
+                    {"name": "OFFLINE_PACKAGE_SIZE", "value": str(size)},
+                ]
+            )
+
             console.print(f"[blue]Size: {size / (1024 * 1024):.2f} MB[/blue]")
 
         except Exception as e:
