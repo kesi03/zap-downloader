@@ -56,7 +56,7 @@ export const chromeCommand = {
       } else {
         console.log(chalk.blue('Installing Chrome and chromedriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
-        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Chrome version ${argv.version}...`));
@@ -132,7 +132,7 @@ export const firefoxCommand = {
       } else {
         console.log(chalk.blue('Installing Firefox and geckodriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
-        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Firefox version ${argv.version}...`));
