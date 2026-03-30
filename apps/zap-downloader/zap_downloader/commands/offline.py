@@ -11,7 +11,10 @@ console = Console()
 
 def pack_offline(
     output: str = typer.Option(
-        "zap-offline.tar", "--output", "-o", help="Output .tar archive path"
+        None,
+        "--output",
+        "-o",
+        help="Output .tar archive path (default: zap-offline-{platform}-{version}.tar)",
     ),
     platform: str = typer.Option(
         "linux", "--platform", "-p", help="Platform for ZAP core"
@@ -46,8 +49,12 @@ def pack_offline(
                 console.print(f"[red]Platform {platform} not available[/red]")
                 raise typer.Exit(1)
 
+            version = zap_versions.core.version
+            if output is None:
+                output = f"zap-offline-{platform}-{version}.tar"
+
             console.print(f"Platform: {platform}")
-            console.print(f"Version: {zap_versions.core.version}")
+            console.print(f"Version: {version}")
             console.print(f"Size: {platform_data.size / (1024 * 1024):.2f} MB")
 
             core_output = os.path.join(zap_dir, platform_data.file)
