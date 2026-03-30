@@ -1,0 +1,65 @@
+name: Dependencies Test - Node.js
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Enable Corepack + pin pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
+      
+      - name: Install dependencies
+        working-directory: apps/zap-downloader-node
+        run: pnpm install
+      
+      - name: Build
+        working-directory: apps/zap-downloader-node
+        run: pnpm build
+      
+      - name: Test chrome command
+        run: sudo pnpm ts-node src/index.ts dependencies chrome
+      
+      - name: Test firefox command
+        run: sudo pnpm ts-node src/index.ts dependencies firefox
+
+  windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        run: npm install -g pnpm
+      
+      - name: Install dependencies
+        working-directory: apps/zap-downloader-node
+        run: pnpm install
+      
+      - name: Build
+        working-directory: apps/zap-downloader-node
+        run: pnpm build
+      
+      - name: Test chrome command
+        run: pnpm ts-node src/index.ts dependencies chrome
+      
+      - name: Test firefox command
+        run: pnpm ts-node src/index.ts dependencies firefox
