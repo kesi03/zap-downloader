@@ -30,15 +30,19 @@ jobs:
         run: pnpm -r run build
       
       - name: Install Chrome
+        working-directory: apps
         run: pnpm dependencies:chrome
       
       - name: Install Firefox
+        working-directory: apps
         run: pnpm dependencies:firefox
       
       - name: Verify Chrome
+        working-directory: apps
         run: pnpm verify:chrome
       
       - name: Verify Firefox
+        working-directory: apps
         run: pnpm verify:firefox
 
   windows:
@@ -67,13 +71,17 @@ jobs:
         run: pnpm -r run build
       
       - name: Install Chrome
+        working-directory: apps
         run: pnpm dependencies:chrome
       
       - name: Install Firefox
+        working-directory: apps
         run: pnpm dependencies:firefox
       
       - name: Verify Chrome
+        working-directory: apps
         run: pnpm verify:chrome
       
       - name: Verify Firefox
+        working-directory: apps
         run: pnpm verify:firefox
