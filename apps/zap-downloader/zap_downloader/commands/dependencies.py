@@ -115,10 +115,33 @@ def firefox(
             console.print(
                 "[blue]Installing Firefox and geckodriver on Windows...[/blue]"
             )
-            ensure_choco()
-            subprocess.run(["choco", "install", "firefox", "-y"], check=True)
-            subprocess.run(["choco", "install", "geckodriver", "-y"], check=True)
-            console.print("[green]Firefox and geckodriver installed[/green]")
+            subprocess.run(
+                [
+                    "powershell",
+                    "-Command",
+                    "Invoke-WebRequest "
+                    "'https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-win64.zip' "
+                    "-OutFile geckodriver.zip",
+                ],
+                check=True,
+            )
+            subprocess.run(
+                [
+                    "powershell",
+                    "-Command",
+                    "Expand-Archive geckodriver.zip -DestinationPath C:\\tools\\geckodriver",
+                ],
+                check=True,
+            )
+            subprocess.run(
+                [
+                    "powershell",
+                    "-Command",
+                    "$env:PATH += ';C:\\tools\\geckodriver'; [Environment]::SetEnvironmentVariable('PATH', $env:PATH, 'User')",
+                ],
+                check=True,
+            )
+            console.print("[green]geckodriver installed[/green]")
         else:
             console.print("[blue]Installing Firefox and geckodriver...[/blue]")
 

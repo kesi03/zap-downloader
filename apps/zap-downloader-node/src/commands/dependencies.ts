@@ -107,10 +107,13 @@ export const firefoxCommand = {
 
       if (os === 'windows' || isWindows()) {
         console.log(chalk.blue('Installing Firefox and geckodriver on Windows...'));
-        ensureChoco();
-        execSync('choco install firefox -y', { stdio: 'inherit' });
-        execSync('choco install geckodriver -y', { stdio: 'inherit' });
-        console.log(chalk.green('Firefox and geckodriver installed'));
+        execSync(
+          'powershell -Command "Invoke-WebRequest \'https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-win64.zip\' -OutFile geckodriver.zip"',
+          { stdio: 'inherit' }
+        );
+        execSync('powershell -Command "Expand-Archive geckodriver.zip -DestinationPath C:\\tools\\geckodriver"', { stdio: 'inherit' });
+        execSync('powershell -Command "$env:PATH += \';C:\\tools\\geckodriver\'; [Environment]::SetEnvironmentVariable(\'PATH\', $env:PATH, \'User\')"', { stdio: 'inherit' });
+        console.log(chalk.green('geckodriver installed'));
       } else {
         console.log(chalk.blue('Installing Firefox and geckodriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
