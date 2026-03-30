@@ -58,7 +58,7 @@ jobs:
       
       - name: Install dependencies
         working-directory: apps
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-lockfile
      
       - name: Build
         working-directory: apps
