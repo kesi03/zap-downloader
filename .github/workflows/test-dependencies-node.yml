@@ -72,13 +72,16 @@ jobs:
         working-directory: apps
         run: pnpm -r run build
       
-      - name: Install Chrome
-        working-directory: apps
-        run: pnpm dependencies:chrome
-      
-      - name: Install Firefox
-        working-directory: apps
-        run: pnpm dependencies:firefox
+      - uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
+      - run: chrome --version
+      - run: chromedriver --version
+
+      - uses: browser-actions/setup-firefox@v1
+      - run: firefox --version
       
       - name: Verify Chrome
         working-directory: apps
