@@ -25,6 +25,8 @@ def pack_offline(
     """Create offline ZAP package with all addons."""
 
     async def _pack():
+        nonlocal output
+
         from ..parser import fetch_zap_versions
         from ..downloader import download_file
 
