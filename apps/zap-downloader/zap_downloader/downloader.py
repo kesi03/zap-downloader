@@ -30,7 +30,9 @@ async def download_file(
 
     proxy = proxy_url or get_proxy_url()
 
-    async with aiohttp.ClientSession() as session:
+    headers = {"User-Agent": "zap-downloader/1.0"}
+
+    async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(
             url, timeout=aiohttp.ClientTimeout(total=300), proxy=proxy
         ) as response:

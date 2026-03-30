@@ -29,7 +29,8 @@ def get_proxy_url() -> Optional[str]:
 
 async def fetch_zap_versions(proxy_url: Optional[str] = None) -> ZapVersions:
     proxy = proxy_url or get_proxy_url()
-    async with aiohttp.ClientSession() as session:
+    headers = {"User-Agent": "zap-downloader/1.0"}
+    async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(VERSIONS_URL, proxy=proxy) as response:
             response.raise_for_status()
             xml = await response.text()
