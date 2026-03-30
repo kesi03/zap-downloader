@@ -8,12 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@mockholm/zap-downloader':
-        specifier: workspace:*
-        version: link:zap-downloader-node
-      browser-verification:
-        specifier: workspace:*
-        version: link:browser-verification
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@25.5.0)(typescript@6.0.2)
