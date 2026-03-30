@@ -1,0 +1,15 @@
+{
+  "name": "zap-downloader-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "offline:pack": "pnpm --filter @mockholm/zap-downloader offline:pack",
+    "offline:unpack": "pnpm --filter @mockholm/zap-downloader offline:unpack",
+    "verify:chrome": "pnpm --filter browser-verification verify:chrome",
+    "verify:firefox": "pnpm --filter browser-verification verify:firefox"
+  },
+  "devDependencies": {
+    "@mockholm/zap-downloader": "workspace:*",
+    "browser-verification": "workspace:*"
+  }
+}

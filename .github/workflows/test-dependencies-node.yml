@@ -22,20 +22,24 @@ jobs:
           corepack prepare pnpm@9.0.0 --activate
       
       - name: Install dependencies
-        working-directory: apps/zap-downloader-node
+        working-directory: apps
         run: pnpm install
       
       - name: Build
-        working-directory: apps/zap-downloader-node
-        run: pnpm build
+        working-directory: apps
+        run: pnpm -r run build
       
-      - name: Test chrome command
-        working-directory: apps/zap-downloader-node
-        run: pnpm ts-node src/index.ts dependencies chrome
+      - name: Install Chrome
+        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies chrome
       
-      - name: Test firefox command
-        working-directory: apps/zap-downloader-node
-        run: pnpm ts-node src/index.ts dependencies firefox
+      - name: Install Firefox
+        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies firefox
+      
+      - name: Verify Chrome
+        run: pnpm verify:chrome
+      
+      - name: Verify Firefox
+        run: pnpm verify:firefox
 
   windows:
     runs-on: windows-latest
@@ -53,17 +57,21 @@ jobs:
         run: npm install -g pnpm
       
       - name: Install dependencies
-        working-directory: apps/zap-downloader-node
+        working-directory: apps
         run: pnpm install
       
       - name: Build
-        working-directory: apps/zap-downloader-node
-        run: pnpm build
+        working-directory: apps
+        run: pnpm -r run build
       
-      - name: Test chrome command
-        working-directory: apps/zap-downloader-node
-        run: pnpm ts-node src/index.ts dependencies chrome
+      - name: Install Chrome
+        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies chrome
       
-      - name: Test firefox command
-        working-directory: apps/zap-downloader-node
-        run: pnpm ts-node src/index.ts dependencies firefox
+      - name: Install Firefox
+        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies firefox
+      
+      - name: Verify Chrome
+        run: pnpm verify:chrome
+      
+      - name: Verify Firefox
+        run: pnpm verify:firefox

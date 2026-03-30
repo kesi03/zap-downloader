@@ -153,14 +153,104 @@ export const firefoxCommand = {
   },
 };
 
+export const verifyChromeCommand = {
+  command: 'verify-chrome',
+  describe: 'Verify Chrome and chromedriver installation',
+
+  builder: (yargs: any) => {
+    return yargs
+      .option('headless', {
+        alias: 'h',
+        description: 'Run in headless mode',
+        type: 'boolean',
+        default: true,
+      });
+  },
+
+  handler: async (argv: Arguments & { headless?: boolean }) => {
+    try {
+      const { Builder } = await import('selenium-webdriver');
+      const chrome = await import('selenium-webdriver/chrome');
+
+      const options = new chrome.Options();
+      if (argv.headless) {
+        options.addArguments('--headless=new');
+      }
+
+      const driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(options)
+        .build();
+
+      try {
+        await driver.get('https://example.com');
+        const title = await driver.getTitle();
+        console.log(chalk.green('Chrome verification successful!'));
+        console.log(chalk.blue('Page title:'), title);
+      } finally {
+        await driver.quit();
+      }
+    } catch (err: any) {
+      console.error(chalk.red('Chrome verification failed:'), err.message);
+      process.exit(1);
+    }
+  },
+};
+
+export const verifyFirefoxCommand = {
+  command: 'verify-firefox',
+  describe: 'Verify Firefox and geckodriver installation',
+
+  builder: (yargs: any) => {
+    return yargs
+      .option('headless', {
+        alias: 'h',
+        description: 'Run in headless mode',
+        type: 'boolean',
+        default: true,
+      });
+  },
+
+  handler: async (argv: Arguments & { headless?: boolean }) => {
+    try {
+      const { Builder } = await import('selenium-webdriver');
+      const firefox = await import('selenium-webdriver/firefox');
+
+      const options = new firefox.Options();
+      if (argv.headless) {
+        options.addArguments('-headless');
+      }
+
+      const driver = await new Builder()
+        .forBrowser('firefox')
+        .setFirefoxOptions(options)
+        .build();
+
+      try {
+        await driver.get('https://example.com');
+        const title = await driver.getTitle();
+        console.log(chalk.green('Firefox verification successful!'));
+        console.log(chalk.blue('Page title:'), title);
+      } finally {
+        await driver.quit();
+      }
+    } catch (err: any) {
+      console.error(chalk.red('Firefox verification failed:'), err.message);
+      process.exit(1);
+    }
+  },
+};
+
 export const command = 'dependencies';
-export const describe = 'Install browser dependencies';
+export const describe = 'Install browser dependencies and verify installation';
 
 export const builder = (yargs: any) => {
   return yargs
     .command(chromeCommand)
     .command(firefoxCommand)
-    .demandCommand(1, 'Specify a subcommand: chrome, firefox');
+    .command(verifyChromeCommand)
+    .command(verifyFirefoxCommand)
+    .demandCommand(1, 'Specify a subcommand: chrome, firefox, verify-chrome, verify-firefox');
 };
 
 export const handler = () => {};
