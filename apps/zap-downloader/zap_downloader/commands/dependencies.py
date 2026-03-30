@@ -48,7 +48,7 @@ def chrome(
                 "[blue]Installing Chrome and chromedriver on Windows...[/blue]"
             )
             ensure_choco()
-            subprocess.run(["choco", "install", "googlechrome", "-y"], check=True)
+            subprocess.run(["choco", "install", "googlechrome", "-y", "--force"], check=True)
 
             result = subprocess.run(
                 [
@@ -175,6 +175,7 @@ def chrome(
                     "apt-get",
                     "install",
                     "-y",
+                    "--reinstall",
                     "/tmp/google-chrome-stable.deb",
                 ],
                 check=True,
@@ -216,6 +217,7 @@ def chrome(
                 "/usr/bin/google-chrome",
                 "/snap/bin/chromium",
                 "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
             ]
             chrome_path = ""
             for p in chrome_paths:
@@ -225,11 +227,15 @@ def chrome(
                 ):
                     chrome_path = p
                     break
-            if chrome_path:
-                console.print(f"[green]Chrome binary found at: {chrome_path}[/blue]")
-                console.print(
-                    f"[blue]Set CHROME_BIN={chrome_path} environment variable[/blue]"
-                )
+            if not chrome_path:
+                chrome_path = "/usr/bin/chromium"
+            console.print(f"[green]Chrome binary found at: {chrome_path}[/green]")
+            console.print(
+                f"[blue]Set CHROME_BIN={chrome_path} environment variable for verification (Linux/macOS)[/blue]"
+            )
+            console.print(
+                f"[blue]Set CHROME_BIN=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe for Windows[/blue]"
+            )
 
             import re
 

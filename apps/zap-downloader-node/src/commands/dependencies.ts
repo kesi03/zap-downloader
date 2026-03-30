@@ -50,7 +50,7 @@ export const chromeCommand = {
       if (os === 'windows' || isWindows()) {
         console.log(chalk.blue('Installing Chrome and chromedriver on Windows...'));
         ensureChoco();
-        execSync('choco install googlechrome -y', { stdio: 'inherit' });
+        execSync('choco install googlechrome -y --force', { stdio: 'inherit' });
 
         const version = execSync('powershell -Command "(Get-Item \'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\').VersionInfo.ProductVersion"').toString().trim();
         const majorVersion = version.split('.')[0];
@@ -79,9 +79,9 @@ export const chromeCommand = {
           `wget -q -O /tmp/google-chrome-stable.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb`,
           { stdio: 'inherit' }
         );
-        execSync('sudo apt-get install -y /tmp/google-chrome-stable.deb', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y --reinstall /tmp/google-chrome-stable.deb', { stdio: 'inherit' });
 
-        const chromePaths = ['/usr/bin/google-chrome', '/snap/bin/chromium', '/usr/bin/chromium'];
+        const chromePaths = ['/usr/bin/google-chrome', '/snap/bin/chromium', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
         let chromePath = '';
         for (const p of chromePaths) {
           try {
@@ -90,10 +90,18 @@ export const chromeCommand = {
             break;
           } catch {}
         }
-        if (chromePath) {
-          console.log(chalk.green(`Chrome binary found at: ${chromePath}`));
-          console.log(chalk.blue(`Set CHROME_BIN=${chromePath} environment variable`));
+        if (!chromePath) {
+          const snapChrome = '/snap/bin/chromium';
+          try {
+            execSync(`ls -la ${snapChrome}`, { stdio: 'pipe' });
+            chromePath = snapChrome;
+          } catch {
+            chromePath = '/usr/bin/chromium';
+          }
         }
+        console.log(chalk.green(`Chrome binary found at: ${chromePath}`));
+        console.log(chalk.blue(`Set CHROME_BIN=${chromePath} environment variable for verification (Linux/macOS)`));
+        console.log(chalk.blue(`Set CHROME_BIN=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe for Windows`));
 
         const version = execSync('google-chrome --version').toString().trim();
         console.log(chalk.green(`Installed Chrome: ${version}`));

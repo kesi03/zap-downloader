@@ -29,6 +29,24 @@ export async function verifyChrome(headless = true) {
 
   if (process.env.CHROME_BIN) {
     options.setChromeBinaryPath(process.env.CHROME_BIN);
+  } else {
+    const searchPaths = [
+      "google-chrome",
+      "chromium",
+      "chromium-browser",
+      "chrome",
+    ];
+    
+    for (const cmd of searchPaths) {
+      try {
+        const { execSync } = require("child_process");
+        const path = execSync(`which ${cmd}`, { stdio: "pipe" }).toString().trim();
+        if (path) {
+          options.setChromeBinaryPath(path);
+          break;
+        }
+      } catch {}
+    }
   }
 
   log("Building Chrome driver");
