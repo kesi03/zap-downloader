@@ -15,6 +15,7 @@ from .commands import (
     workspace,
     validate,
     offline,
+    dependencies,
 )
 
 app = typer.Typer(
@@ -49,6 +50,17 @@ app.add_typer(offline_app)
 
 offline_app.command(name="pack")(offline.pack_offline)
 offline_app.command(name="unpack")(offline.unpack_offline)
+
+dependencies_app = typer.Typer(
+    name="dependencies",
+    help="Install browser dependencies",
+    add_completion=False,
+)
+
+app.add_typer(dependencies_app)
+
+dependencies_app.command(name="chrome")(dependencies.chrome)
+dependencies_app.command(name="firefox")(dependencies.firefox)
 
 app.command(name="core")(core.core)
 app.command(name="addons")(addons.addons)

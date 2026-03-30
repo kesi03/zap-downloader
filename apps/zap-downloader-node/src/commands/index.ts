@@ -11,3 +11,4 @@ export { command as daemonCommand, describe as daemonDescribe, builder as daemon
 export { command as workspaceCommand, describe as workspaceDescribe, builder as workspaceBuilder, handler as workspaceHandler } from './workspace';
 export { command as createTomlConfigCommand, describe as createTomlConfigDescribe, builder as createTomlConfigBuilder, handler as createTomlConfigHandler } from './create-toml-config';
 export { command as offlineCommand, describe as offlineDescribe, builder as offlineBuilder, handler as offlineHandler } from './offline';
+export { command as dependenciesCommand, describe as dependenciesDescribe, builder as dependenciesBuilder, handler as dependenciesHandler } from './dependencies';
