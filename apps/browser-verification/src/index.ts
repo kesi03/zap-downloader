@@ -4,39 +4,40 @@ import { verifyChrome } from './verify-chrome';
 import { verifyFirefox } from './verify-firefox';
 
 yargs(process.argv.slice(2))
-  .scriptName('verify')
   .command(
-    'chrome',
-    'Verify Chrome and chromedriver installation',
-    (yargs) => {
-      return yargs.option('headless', {
-        alias: 'h',
-        description: 'Run in headless mode',
-        type: 'boolean',
-        default: true,
-      });
+    'verify <browser>',
+    'Verify browser and driver installation',
+    (y: any) => {
+      return y
+        .positional('browser', {
+          describe: 'Browser to verify',
+          choices: ['chrome', 'firefox'],
+          demandOption: true,
+        })
+        .option('headless', {
+          alias: 'h',
+          description: 'Run in headless mode',
+          type: 'boolean',
+          default: true,
+        });
     },
-    async (argv) => {
-      console.log('Chrome verification successful!');
-      await verifyChrome(argv.headless as boolean);
+    async (argv: any) => {
+      const { browser, headless } = argv;
+      console.log(`Verifying ${browser}...`);
+
+      try {
+        if (browser === 'chrome') {
+          await verifyChrome(headless);
+        } else if (browser === 'firefox') {
+          await verifyFirefox(headless);
+        }
+        process.exit(0);
+      } catch (error) {
+        console.error('Verification failed:', error);
+        process.exit(1);
+      }
     }
   )
-  .command(
-    'firefox',
-    'Verify Firefox and geckodriver installation',
-    (yargs) => {
-      return yargs.option('headless', {
-        alias: 'h',
-        description: 'Run in headless mode',
-        type: 'boolean',
-        default: true,
-      });
-    },
-    async (argv) => {
-      console.log('Firefox verification successful!');
-      await verifyFirefox(argv.headless as boolean);
-    }
-  )
-  .demandCommand(1, 'Specify a subcommand: chrome, firefox')
+  .demandCommand(1)
   .help()
   .parse();
