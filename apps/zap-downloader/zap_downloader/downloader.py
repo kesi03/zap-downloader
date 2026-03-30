@@ -47,6 +47,8 @@ async def download_file(
                     async for chunk in response.content.iter_chunked(chunk_size):
                         f.write(chunk)
                         pbar.update(len(chunk))
+                f.flush()
+                os.fsync(f.fileno())
 
     print(f"Downloaded to {output_path}")
 
