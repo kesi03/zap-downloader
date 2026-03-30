@@ -40,7 +40,9 @@ jobs:
       - name: Verify Chrome
         working-directory: apps
         run: pnpm verify:chrome
-      
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+       
       - name: Verify Firefox
         working-directory: apps
         run: pnpm verify:firefox
@@ -81,7 +83,9 @@ jobs:
       - name: Verify Chrome
         working-directory: apps
         run: pnpm verify:chrome
-      
+        env:
+          CHROME_BIN: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+       
       - name: Verify Firefox
         working-directory: apps
         run: pnpm verify:firefox

@@ -158,18 +158,27 @@ def chrome(
             )
             subprocess.run(["sudo", "apt-get", "update"], check=True)
 
-            if version:
-                console.print(f"[blue]Installing Chrome version {version}...[/blue]")
-                subprocess.run(
-                    [
-                        "wget",
-                        "-q",
-                        "-O",
-                        "/tmp/google-chrome-stable.deb",
-                        "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb",
-                    ],
-                    check=True,
-                )
+            console.print(f"[blue]Installing latest Chrome...[/blue]")
+            subprocess.run(
+                [
+                    "wget",
+                    "-q",
+                    "-O",
+                    "/tmp/google-chrome-stable.deb",
+                    "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb",
+                ],
+                check=True,
+            )
+            subprocess.run(
+                [
+                    "sudo",
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "/tmp/google-chrome-stable.deb",
+                ],
+                check=True,
+            )
                 subprocess.run(
                     [
                         "sudo",
@@ -182,7 +191,14 @@ def chrome(
                 )
             else:
                 subprocess.run(
-                    ["sudo", "apt-get", "install", "-y", "google-chrome-stable"],
+                    [
+                        "sudo",
+                        "apt-get",
+                        "install",
+                        "-y",
+                        "--upgrade",
+                        "google-chrome-stable",
+                    ],
                     check=True,
                 )
 
@@ -193,6 +209,27 @@ def chrome(
                 check=True,
             )
             console.print(f"[green]Installed Chrome: {result.stdout.strip()}[/green]")
+
+            import os
+
+            chrome_paths = [
+                "/usr/bin/google-chrome",
+                "/snap/bin/chromium",
+                "/usr/bin/chromium",
+            ]
+            chrome_path = ""
+            for p in chrome_paths:
+                if (
+                    subprocess.run(["test", "-x", p], capture_output=True).returncode
+                    == 0
+                ):
+                    chrome_path = p
+                    break
+            if chrome_path:
+                console.print(f"[green]Chrome binary found at: {chrome_path}[/blue]")
+                console.print(
+                    f"[blue]Set CHROME_BIN={chrome_path} environment variable[/blue]"
+                )
 
             import re
 

@@ -52,7 +52,7 @@ export const chromeCommand = {
         ensureChoco();
         execSync('choco install googlechrome -y', { stdio: 'inherit' });
 
-        const version = execSync('powershell -Command "(Get-Item "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe").VersionInfo.ProductVersion"').toString().trim();
+        const version = execSync('powershell -Command "(Get-Item \'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\').VersionInfo.ProductVersion"').toString().trim();
         const majorVersion = version.split('.')[0];
         console.log(chalk.green(`Installed Chrome: ${version}`));
 
@@ -74,15 +74,25 @@ export const chromeCommand = {
         execSync('echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list', { stdio: 'inherit' });
         execSync('sudo apt-get update', { stdio: 'inherit' });
 
-        if (argv.version) {
-          console.log(chalk.blue(`Installing Chrome version ${argv.version}...`));
-          execSync(
-            `wget -q -O /tmp/google-chrome-stable.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb`,
-            { stdio: 'inherit' }
-          );
-          execSync('sudo apt-get install -y /tmp/google-chrome-stable.deb', { stdio: 'inherit' });
-        } else {
-          execSync('sudo apt-get install -y google-chrome-stable', { stdio: 'inherit' });
+        console.log(chalk.blue(`Installing latest Chrome...`));
+        execSync(
+          `wget -q -O /tmp/google-chrome-stable.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb`,
+          { stdio: 'inherit' }
+        );
+        execSync('sudo apt-get install -y /tmp/google-chrome-stable.deb', { stdio: 'inherit' });
+
+        const chromePaths = ['/usr/bin/google-chrome', '/snap/bin/chromium', '/usr/bin/chromium'];
+        let chromePath = '';
+        for (const p of chromePaths) {
+          try {
+            execSync(`test -x ${p} && echo exists`, { stdio: 'pipe' });
+            chromePath = p;
+            break;
+          } catch {}
+        }
+        if (chromePath) {
+          console.log(chalk.green(`Chrome binary found at: ${chromePath}`));
+          console.log(chalk.blue(`Set CHROME_BIN=${chromePath} environment variable`));
         }
 
         const version = execSync('google-chrome --version').toString().trim();
