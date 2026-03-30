@@ -68,7 +68,11 @@ export const chromeCommand = {
       } else {
         console.log(chalk.blue('Installing Chrome and chromedriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
-        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1 wget unzip', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y wget gnupg xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1 unzip', { stdio: 'inherit' });
+
+        execSync('wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -', { stdio: 'inherit' });
+        execSync('echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list', { stdio: 'inherit' });
+        execSync('sudo apt-get update', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Chrome version ${argv.version}...`));
@@ -86,15 +90,21 @@ export const chromeCommand = {
 
         const majorVersion = version.match(/Chrome (\d+)/)?.[1];
         if (majorVersion) {
-          console.log(chalk.blue(`Installing matching chromedriver for Chrome ${majorVersion}...`));
-          execSync(
-            `wget -q -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${majorVersion}/linux64/chromedriver-linux64.zip`,
-            { stdio: 'inherit' }
-          );
-          execSync('sudo unzip -o /tmp/chromedriver.zip -d /usr/local/bin/', { stdio: 'inherit' });
-          execSync('sudo mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver', { stdio: 'inherit' });
-          execSync('sudo rm -rf /usr/local/bin/chromedriver-linux64', { stdio: 'inherit' });
-          console.log(chalk.green('chromedriver installed'));
+          try {
+            console.log(chalk.blue(`Installing matching chromedriver for Chrome ${majorVersion}...`));
+            execSync(
+              `wget -q -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${majorVersion}/linux64/chromedriver-linux64.zip`,
+              { stdio: 'inherit' }
+            );
+            execSync('sudo unzip -o /tmp/chromedriver.zip -d /usr/local/bin/', { stdio: 'inherit' });
+            execSync('sudo mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver', { stdio: 'inherit' });
+            execSync('sudo rm -rf /usr/local/bin/chromedriver-linux64', { stdio: 'inherit' });
+            console.log(chalk.green('chromedriver installed'));
+          } catch {
+            console.log(chalk.yellow(`Chrome ${majorVersion} not available on chrome-for-testing, falling back to apt`));
+            execSync('sudo apt-get install -y chromium-chromedriver', { stdio: 'inherit' });
+            console.log(chalk.green('chromedriver installed'));
+          }
         } else {
           execSync('sudo apt-get install -y chromium-chromedriver', { stdio: 'inherit' });
           console.log(chalk.green('chromedriver installed'));
