@@ -38,7 +38,7 @@ async def download_file(
     response = requests.get(
         url,
         headers=headers,
-        proxy=proxy,
+        proxies={"http": proxy, "https": proxy} if proxy else None,
         allow_redirects=True,
         stream=True,
         timeout=300,
