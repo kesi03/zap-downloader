@@ -1,5 +1,6 @@
 import typer
 import asyncio
+from typing import Optional
 from rich.console import Console
 
 from ..parser import fetch_zap_versions
@@ -9,16 +10,17 @@ console = Console()
 
 def info(
     addon_id: str = typer.Argument(..., help="Addon ID to get info about"),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Get detailed information about a specific addon."""
-    asyncio.run(_get_info(addon_id))
+    asyncio.run(_get_info(addon_id, proxy))
 
 
-async def _get_info(addon_id: str):
+async def _get_info(addon_id: str, proxy: Optional[str]):
     from ..downloader import format_bytes
 
     console.print("Fetching ZAP versions...")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     addon = None
     for a in zap_versions.addons:

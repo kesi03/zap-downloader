@@ -2,9 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { pipeline } from 'stream/promises';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+import { getProxyUrl } from './proxy';
 
-export async function downloadFile(url: string, outputPath: string, expectedHash?: string): Promise<void> {
+export async function downloadFile(url: string, outputPath: string, expectedHash?: string, proxyUrl?: string): Promise<void> {
   const dir = path.dirname(outputPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -12,12 +13,29 @@ export async function downloadFile(url: string, outputPath: string, expectedHash
   
   console.log(`Downloading ${url}...`);
   
-  const response = await axios({
+  const proxy = proxyUrl || getProxyUrl();
+  
+  const config: AxiosRequestConfig = {
     method: 'get',
     url,
     responseType: 'stream',
     timeout: 300000,
-  });
+  };
+  
+  if (proxy) {
+    const proxyUrlObj = new URL(proxy);
+    config.proxy = {
+      protocol: proxyUrlObj.protocol.replace(':', ''),
+      host: proxyUrlObj.hostname,
+      port: proxyUrlObj.port ? parseInt(proxyUrlObj.port) : 80,
+      auth: proxyUrlObj.username ? {
+        username: proxyUrlObj.username,
+        password: proxyUrlObj.password,
+      } : undefined,
+    };
+  }
+  
+  const response = await axios(config);
   
   await pipeline(response.data, fs.createWriteStream(outputPath));
   

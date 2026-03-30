@@ -23,8 +23,31 @@ pnpm run build
 | Option | Alias | Description | Default |
 |--------|-------|-------------|---------|
 | `--workspace` | `-w` | Workspace directory | `zap-workspace` |
+| `--proxy` | `-x` | Proxy URL (e.g., `http://proxy:8080`) | |
 | `--help` | `-h` | Show help | |
 | `--version` | `-V` | Show version | |
+
+#### Proxy Support
+
+You can use a proxy for downloading by setting either:
+
+**Option 1: Command-line flag**
+```bash
+npm run core -- -p linux -x http://proxy:8080
+npm run addons -- -c config.yaml -x http://proxy:8080
+```
+
+**Option 2: Environment variable**
+```bash
+export HTTP_PROXY=http://proxy:8080
+export HTTPS_PROXY=http://proxy:8080
+
+# Or lowercase
+export http_proxy=http://proxy:8080
+export https_proxy=http://proxy:8080
+```
+
+The proxy option works with all commands that make network requests (e.g., `list`, `info`, `core`, `addons`, `download-zap`, `create-config`, `create-zap-config`, `offline pack`).
 
 Set workspace via environment variable:
 ```bash

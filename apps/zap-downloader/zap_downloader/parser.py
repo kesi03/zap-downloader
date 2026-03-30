@@ -1,5 +1,6 @@
 import aiohttp
 import re
+import os
 import xmltodict
 from typing import Any, Dict, List, Optional
 
@@ -17,9 +18,19 @@ VERSIONS_URL = (
 )
 
 
-async def fetch_zap_versions() -> ZapVersions:
+def get_proxy_url() -> Optional[str]:
+    return (
+        os.environ.get("HTTPS_PROXY")
+        or os.environ.get("HTTP_PROXY")
+        or os.environ.get("https_proxy")
+        or os.environ.get("http_proxy")
+    )
+
+
+async def fetch_zap_versions(proxy_url: Optional[str] = None) -> ZapVersions:
+    proxy = proxy_url or get_proxy_url()
     async with aiohttp.ClientSession() as session:
-        async with session.get(VERSIONS_URL) as response:
+        async with session.get(VERSIONS_URL, proxy=proxy) as response:
             response.raise_for_status()
             xml = await response.text()
             return parse_zap_versions_xml(xml)

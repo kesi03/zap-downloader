@@ -6,6 +6,7 @@ import inquirer from 'inquirer';
 import { fetchZapVersions } from '../parser';
 import { AddonRequest, ZapConfig } from '../types';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'create-zap-config';
 export const describe = 'Create ZAP config with platform, version, and addons';
@@ -47,12 +48,14 @@ export const handler = async (argv: Arguments & {
   'zap-version'?: string;
   addons?: string;
   output: string;
+  proxy?: string;
 }) => {
   const outputFilename = argv.output;
   const statusFilter = argv.status;
   const platformArg = argv.platform;
   const versionArg = argv['zap-version'];
   const addonsArg = argv.addons;
+  const proxy = argv.proxy || getProxyUrl();
 
   const validStatuses = ['release', 'beta', 'alpha', 'all'];
   if (!validStatuses.includes(statusFilter)) {
@@ -61,7 +64,7 @@ export const handler = async (argv: Arguments & {
   }
 
   console.log(chalk.blue('Fetching ZAP versions...'));
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   let selectedPlatform: string;
   let selectedVersion: string;

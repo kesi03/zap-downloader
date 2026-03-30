@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { fetchZapVersions } from '../parser';
 import { formatBytes } from '../downloader';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'info';
 export const describe = 'Show information about a specific addon';
@@ -17,11 +18,13 @@ export const builder = (yargs: any) => {
 
 export const handler = async (argv: Arguments & {
   addon: string;
+  proxy?: string;
 }) => {
   const addonId = argv.addon;
+  const proxy = argv.proxy || getProxyUrl();
 
   console.log('Fetching ZAP versions...');
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   const addon = zapVersions.addons.find(a => a.id === addonId);
   if (!addon) {

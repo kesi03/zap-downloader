@@ -24,9 +24,10 @@ def addons(
     output: Optional[str] = typer.Option(
         None, "--output", "-o", help="Output directory for addons"
     ),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Download ZAP addons from config file or addon IDs."""
-    asyncio.run(_download_addons(addon_ids, config, status, workspace, output))
+    asyncio.run(_download_addons(addon_ids, config, status, workspace, output, proxy))
 
 
 async def _download_addons(
@@ -35,6 +36,7 @@ async def _download_addons(
     status: Optional[str],
     workspace: Optional[str],
     output: Optional[str],
+    proxy: Optional[str],
 ):
     from ..workspace import ensure_workspace, get_workspace
     from ..downloader import download_file
@@ -99,7 +101,7 @@ async def _download_addons(
         os.makedirs(addons_dir, exist_ok=True)
 
     console.print("Fetching ZAP versions...")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     addon_map = {addon.id: addon for addon in zap_versions.addons}
 
@@ -116,7 +118,7 @@ async def _download_addons(
             continue
 
         output_path = os.path.join(addons_dir, addon.file)
-        await download_file(addon.url, output_path, addon.hash)
+        await download_file(addon.url, output_path, addon.hash, proxy)
         downloaded.append(addon.id)
 
     if downloaded:

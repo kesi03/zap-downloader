@@ -1,6 +1,7 @@
 import typer
 import yaml
 import asyncio
+from typing import Optional
 from rich.console import Console
 
 console = Console()
@@ -17,16 +18,19 @@ def create_zap_config(
     output: str = typer.Option(
         "zap-config.yaml", "--output", "-o", help="Output file path"
     ),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Create ZAP config file with core and addons."""
-    asyncio.run(_create_config(platform, addons, output))
+    asyncio.run(_create_config(platform, addons, output, proxy))
 
 
-async def _create_config(platform: str, addon_ids: list[str], output: str):
+async def _create_config(
+    platform: str, addon_ids: list[str], output: str, proxy: Optional[str]
+):
     from ..parser import fetch_zap_versions
 
     console.print("Fetching ZAP versions...")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     config = {
         "zap": {

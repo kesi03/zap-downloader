@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { fetchZapVersions } from '../parser';
 import { downloadFile, formatBytes } from '../downloader';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'core';
 export const describe = 'Download ZAP core';
@@ -34,11 +35,13 @@ export const handler = async (argv: Arguments & {
   output: string;
   workspace: string;
   'zap-version'?: string;
+  proxy?: string;
 }) => {
   const platform = argv.platform;
   let outputDir = argv.output;
   const workspace = argv.workspace;
   const zapVersion = argv['zap-version'];
+  const proxy = argv.proxy || getProxyUrl();
 
   if (!outputDir || outputDir === '.') {
     outputDir = path.join(workspace, 'zap');
@@ -55,7 +58,7 @@ export const handler = async (argv: Arguments & {
   }
 
   console.log('Fetching ZAP versions...');
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   const platformData = zapVersions.core.platforms[platform as keyof typeof zapVersions.core.platforms];
   if (!platformData) {
@@ -69,6 +72,6 @@ export const handler = async (argv: Arguments & {
   console.log(`Size: ${formatBytes(platformData.size)}`);
   console.log(`Hash: ${platformData.hash}`);
 
-  await downloadFile(platformData.url, outputPath, platformData.hash);
+  await downloadFile(platformData.url, outputPath, platformData.hash, proxy);
   console.log('Download complete!');
 };

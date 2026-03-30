@@ -69,6 +69,12 @@ def main(
     workspace: Optional[str] = typer.Option(
         None, "--workspace", "-w", help="Workspace directory"
     ),
+    proxy: Optional[str] = typer.Option(
+        None,
+        "--proxy",
+        "-x",
+        help="Proxy URL (e.g., http://proxy:8080, or set HTTP_PROXY/HTTPS_PROXY env)",
+    ),
 ):
     """OWASP ZAP Downloader."""
     pass

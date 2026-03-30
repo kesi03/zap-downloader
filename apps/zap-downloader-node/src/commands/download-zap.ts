@@ -7,6 +7,7 @@ import { downloadFile, formatBytes } from '../downloader';
 import { ZapConfig } from '../types';
 import { Arguments } from 'yargs';
 import { ensureWorkspace } from '../workspace';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'download-zap';
 export const describe = 'Download ZAP core and addons from config file';
@@ -24,9 +25,11 @@ export const builder = (yargs: any) => {
 export const handler = async (argv: Arguments & {
   config: string;
   workspace: string;
+  proxy?: string;
 }) => {
   const configPath = argv.config;
   const workspace = argv.workspace;
+  const proxy = argv.proxy || getProxyUrl();
 
   if (!fs.existsSync(configPath)) {
     console.error(chalk.red(`Config file not found: ${configPath}`));
@@ -44,7 +47,7 @@ export const handler = async (argv: Arguments & {
   ensureWorkspace(workspace);
 
   console.log(chalk.blue('Fetching ZAP versions...'));
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   const platform = config.zap.platform;
   const version = config.zap.version;
@@ -64,7 +67,7 @@ export const handler = async (argv: Arguments & {
   console.log(chalk.gray(`  Size: ${formatBytes(platformData.size)}`));
 
   const zapOutputPath = path.join(zapDir, platformData.file);
-  await downloadFile(platformData.url, zapOutputPath, platformData.hash);
+  await downloadFile(platformData.url, zapOutputPath, platformData.hash, proxy);
   console.log(chalk.green('ZAP core downloaded!'));
 
   const addonsDir = path.join(zapDir, 'addons');
@@ -104,7 +107,7 @@ export const handler = async (argv: Arguments & {
       console.log(chalk.gray(`  - ${addon.id} v${addon.version} (${addon.status})`));
 
       const addonOutputPath = path.join(addonsDir, addon.file);
-      await downloadFile(addon.url, addonOutputPath, addon.hash);
+      await downloadFile(addon.url, addonOutputPath, addon.hash, proxy);
       downloadedIds.add(addon.id);
     }
     console.log(chalk.green('Addons downloaded!'));

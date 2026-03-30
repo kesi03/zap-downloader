@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { fetchZapVersions } from '../../parser';
 import { downloadFile, formatBytes } from '../../downloader';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../../proxy';
 
 export const packOfflineCommand = {
   command: 'pack',
@@ -29,9 +30,11 @@ export const packOfflineCommand = {
   handler: async (argv: Arguments & {
     output?: string;
     platform?: string;
+    proxy?: string;
   }) => {
     const platform = argv.platform || 'linux';
     const outputName = argv.output || 'zap-offline.tar';
+    const proxy = argv.proxy || getProxyUrl();
 
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zap-offline-'));
     const workspace = path.join(tempDir, 'workspace');
@@ -48,7 +51,7 @@ export const packOfflineCommand = {
       fs.mkdirSync(installDir, { recursive: true });
 
       console.log(chalk.blue('\n=== Downloading ZAP core ==='));
-      const zapVersions = await fetchZapVersions();
+      const zapVersions = await fetchZapVersions(proxy);
       const platformData = zapVersions.core.platforms[platform as keyof typeof zapVersions.core.platforms];
 
       if (!platformData) {
@@ -61,7 +64,7 @@ export const packOfflineCommand = {
       console.log(`Size: ${formatBytes(platformData.size)}`);
 
       const coreOutput = path.join(zapDir, platformData.file);
-      await downloadFile(platformData.url, coreOutput, platformData.hash);
+      await downloadFile(platformData.url, coreOutput, platformData.hash, proxy);
       console.log(chalk.green('ZAP core downloaded'));
 
       console.log(chalk.blue('\n=== Downloading ALL addons (release + beta + alpha) ==='));
@@ -84,7 +87,7 @@ export const packOfflineCommand = {
         const outputPath = path.join(addonsDir, addon.file);
         
         try {
-          await downloadFile(addon.url, outputPath, addon.hash);
+          await downloadFile(addon.url, outputPath, addon.hash, proxy);
           downloadedIds.add(addon.id);
         } catch (err) {
           console.log(chalk.yellow(`  Skipping ${addon.id}: hash mismatch (may be outdated)`));

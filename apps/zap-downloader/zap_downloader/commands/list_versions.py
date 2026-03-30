@@ -1,5 +1,6 @@
 import typer
 import asyncio
+from typing import Optional
 from rich.console import Console
 
 console = Console()
@@ -8,17 +9,18 @@ console = Console()
 def list_versions(
     addons: bool = typer.Option(False, "--addons", "-a", help="List addons only"),
     core: bool = typer.Option(False, "--core", "-c", help="List core versions only"),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """List available ZAP versions and addons."""
-    asyncio.run(_list_versions(addons, core))
+    asyncio.run(_list_versions(addons, core, proxy))
 
 
-async def _list_versions(list_addons: bool, list_core: bool):
+async def _list_versions(list_addons: bool, list_core: bool, proxy: Optional[str]):
     from ..parser import fetch_zap_versions
     from ..downloader import format_bytes
 
     console.print("Fetching ZAP versions...")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     if not list_addons:
         console.print("\n[bold]=== ZAP Core ===[/bold]")

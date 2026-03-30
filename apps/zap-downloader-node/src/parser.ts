@@ -1,11 +1,28 @@
 import { parseStringPromise } from 'xml2js';
 import axios from 'axios';
 import { ZapVersions, ZapCore, ZapAddon, AddonDependency } from './types';
+import { getProxyUrl } from './proxy';
 
 const VERSIONS_URL = 'https://raw.githubusercontent.com/zaproxy/zap-admin/master/ZapVersions-dev.xml';
 
-export async function fetchZapVersions(): Promise<ZapVersions> {
-  const response = await axios.get(VERSIONS_URL);
+export async function fetchZapVersions(proxyUrl?: string): Promise<ZapVersions> {
+  const proxy = proxyUrl || getProxyUrl();
+  
+  const config: any = {};
+  if (proxy) {
+    const proxyUrlObj = new URL(proxy);
+    config.proxy = {
+      protocol: proxyUrlObj.protocol.replace(':', ''),
+      host: proxyUrlObj.hostname,
+      port: proxyUrlObj.port ? parseInt(proxyUrlObj.port) : undefined,
+      auth: proxyUrlObj.username ? {
+        username: proxyUrlObj.username,
+        password: proxyUrlObj.password,
+      } : undefined,
+    };
+  }
+  
+  const response = await axios.get(VERSIONS_URL, config);
   return parseZapVersionsXml(response.data);
 }
 

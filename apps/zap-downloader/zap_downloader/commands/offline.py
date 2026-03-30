@@ -16,6 +16,7 @@ def pack_offline(
     platform: str = typer.Option(
         "linux", "--platform", "-p", help="Platform for ZAP core"
     ),
+    proxy: str = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Create offline ZAP package with all addons."""
 
@@ -38,7 +39,7 @@ def pack_offline(
             os.makedirs(install_dir, exist_ok=True)
 
             console.print(f"[blue]=== Downloading ZAP core ===[/blue]")
-            zap_versions = await fetch_zap_versions()
+            zap_versions = await fetch_zap_versions(proxy)
             platform_data = zap_versions.core.platforms.get(platform)
 
             if not platform_data:
@@ -50,7 +51,9 @@ def pack_offline(
             console.print(f"Size: {platform_data.size / (1024 * 1024):.2f} MB")
 
             core_output = os.path.join(zap_dir, platform_data.file)
-            await download_file(platform_data.url, core_output, platform_data.hash)
+            await download_file(
+                platform_data.url, core_output, platform_data.hash, proxy
+            )
             console.print(f"[green]ZAP core downloaded[/green]")
 
             console.print(
@@ -77,7 +80,7 @@ def pack_offline(
 
                 output_path = os.path.join(addons_dir, addon.file)
                 try:
-                    await download_file(addon.url, output_path, addon.hash)
+                    await download_file(addon.url, output_path, addon.hash, proxy)
                     downloaded_ids.add(addon.id)
                 except Exception as e:
                     console.print(

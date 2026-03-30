@@ -11,15 +11,18 @@ console = Console()
 
 def download_zap(
     config: str = typer.Option(..., "--config", "-c", help="Path to ZAP config file"),
-    workspace: str = typer.Option(
+    workspace: Optional[str] = typer.Option(
         None, "--workspace", "-w", help="Workspace directory"
     ),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Download ZAP core and addons from config file."""
-    asyncio.run(_download_zap(config, workspace))
+    asyncio.run(_download_zap(config, workspace, proxy))
 
 
-async def _download_zap(config_path: str, workspace: str):
+async def _download_zap(
+    config_path: str, workspace: Optional[str], proxy: Optional[str]
+):
     from ..parser import fetch_zap_versions
     from ..downloader import download_file, format_bytes
 
@@ -40,7 +43,7 @@ async def _download_zap(config_path: str, workspace: str):
     ensure_workspace(workspace)
 
     console.print("[blue]Fetching ZAP versions...[/blue]")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     platform = config["zap"]["platform"]
     version = config["zap"]["version"]
@@ -58,7 +61,7 @@ async def _download_zap(config_path: str, workspace: str):
     console.print(f"[gray]  Size: {format_bytes(platform_data.size)}[/gray]")
 
     zap_output_path = os.path.join(zap_dir, platform_data.file)
-    await download_file(platform_data.url, zap_output_path, platform_data.hash)
+    await download_file(platform_data.url, zap_output_path, platform_data.hash, proxy)
     console.print("[green]ZAP core downloaded![/green]")
 
     addons_dir = os.path.join(zap_dir, "addons")
@@ -93,7 +96,7 @@ async def _download_zap(config_path: str, workspace: str):
             )
 
             addon_output_path = os.path.join(addons_dir, addon.file)
-            await download_file(addon.url, addon_output_path, addon.hash)
+            await download_file(addon.url, addon_output_path, addon.hash, proxy)
             downloaded_ids.add(addon.id)
 
         console.print("[green]Addons downloaded![/green]")

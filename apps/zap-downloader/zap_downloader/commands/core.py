@@ -1,6 +1,7 @@
 import typer
 import asyncio
 import os
+from typing import Optional
 from rich.console import Console
 
 console = Console()
@@ -11,19 +12,26 @@ def core(
         ..., "--platform", "-p", help="Platform: windows, windows32, linux, mac, daily"
     ),
     output: str = typer.Option(".", "--output", "-o", help="Output directory"),
-    workspace: str = typer.Option(
+    workspace: Optional[str] = typer.Option(
         None, "--workspace", "-w", help="Workspace directory"
     ),
-    zap_version: str = typer.Option(
+    zap_version: Optional[str] = typer.Option(
         None, "--zap-version", "-v", help="Specific version to download"
     ),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Download ZAP core."""
-    asyncio.run(_download_core(platform, output, workspace, zap_version))
+    asyncio.run(_download_core(platform, output, workspace, zap_version, proxy))
 
 
-async def _download_core(platform: str, output: str, workspace: str, zap_version: str):
-    from ..parser import fetch_zap_versions
+async def _download_core(
+    platform: str,
+    output: str,
+    workspace: Optional[str],
+    zap_version: Optional[str],
+    proxy: Optional[str],
+):
+    from ..parser import fetch_zap_versions, get_proxy_url
     from ..downloader import download_file, format_bytes
     from ..workspace import get_workspace
 
@@ -44,7 +52,7 @@ async def _download_core(platform: str, output: str, workspace: str, zap_version
         os.makedirs(output, exist_ok=True)
 
     console.print("Fetching ZAP versions...")
-    zap_versions = await fetch_zap_versions()
+    zap_versions = await fetch_zap_versions(proxy)
 
     platform_key = platform
     platform_data = zap_versions.core.platforms.get(platform_key)
@@ -58,5 +66,5 @@ async def _download_core(platform: str, output: str, workspace: str, zap_version
     console.print(f"Hash: {platform_data.hash}")
 
     output_path = os.path.join(output, platform_data.file)
-    await download_file(platform_data.url, output_path, platform_data.hash)
+    await download_file(platform_data.url, output_path, platform_data.hash, proxy)
     console.print("[green]Download complete![/green]")

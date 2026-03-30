@@ -1,6 +1,7 @@
 import typer
 import asyncio
 import os
+from typing import Optional
 from rich.console import Console
 
 console = Console()
@@ -17,12 +18,18 @@ def validate(
         "-p",
         help="Platform (windows, windows32, linux, mac, daily) to compare hash against",
     ),
+    proxy: Optional[str] = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
 ):
     """Validate a file's SHA256 hash against XML data or show the hash."""
-    asyncio.run(_validate(file, addon_id, platform))
+    asyncio.run(_validate(file, addon_id, platform, proxy))
 
 
-async def _validate(file_path: str, addon_id: str, platform: str):
+async def _validate(
+    file_path: str,
+    addon_id: Optional[str],
+    platform: Optional[str],
+    proxy: Optional[str],
+):
     from ..downloader import calculate_hash
 
     if not os.path.exists(file_path):
@@ -38,7 +45,7 @@ async def _validate(file_path: str, addon_id: str, platform: str):
         from ..downloader import format_bytes
 
         console.print("\nFetching ZAP versions to compare...")
-        zap_versions = await fetch_zap_versions()
+        zap_versions = await fetch_zap_versions(proxy)
 
         if addon_id:
             addon = None

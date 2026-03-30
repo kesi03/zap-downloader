@@ -6,6 +6,7 @@ import inquirer from 'inquirer';
 import { fetchZapVersions } from '../parser';
 import { AddonRequest } from '../types';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'create-config';
 export const describe = 'Interactive: select addons and save to config file';
@@ -29,9 +30,11 @@ export const builder = (yargs: any) => {
 export const handler = async (argv: Arguments & {
   status: string;
   output: string;
+  proxy?: string;
 }) => {
   const outputFilename = argv.output;
   const statusFilter = argv.status;
+  const proxy = argv.proxy || getProxyUrl();
 
   const validStatuses = ['release', 'beta', 'alpha', 'all'];
   if (!validStatuses.includes(statusFilter)) {
@@ -40,7 +43,7 @@ export const handler = async (argv: Arguments & {
   }
 
   console.log(chalk.blue('Fetching ZAP versions...'));
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   let filteredAddons = zapVersions.addons;
   if (statusFilter !== 'all') {

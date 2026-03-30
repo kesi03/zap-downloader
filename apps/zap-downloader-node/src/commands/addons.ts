@@ -6,6 +6,7 @@ import { fetchZapVersions } from '../parser';
 import { downloadFile, formatBytes } from '../downloader';
 import { AddonConfig, AddonRequest } from '../types';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'addons';
 export const describe = 'Download ZAP addons from config file or addon IDs';
@@ -40,12 +41,14 @@ export const handler = async (argv: Arguments & {
   workspace: string;
   status?: string;
   addonIds: string[];
+  proxy?: string;
 }) => {
   const configPath = argv.config;
   let defaultOutput = argv.output;
   const workspace = argv.workspace;
   const statusFilter = argv.status;
   const addonIds = argv.addonIds || [];
+  const proxy = argv.proxy || getProxyUrl();
 
   const addonRequests: AddonRequest[] = [];
 
@@ -102,7 +105,7 @@ export const handler = async (argv: Arguments & {
   }
 
   console.log('Fetching ZAP versions...');
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   const addonMap = new Map<string, typeof zapVersions.addons[0]>();
   for (const addon of zapVersions.addons) {
@@ -140,7 +143,7 @@ export const handler = async (argv: Arguments & {
     }
 
     const outputPath = path.join(defaultOutput, addon.file);
-    await downloadFile(addon.url, outputPath, addon.hash);
+    await downloadFile(addon.url, outputPath, addon.hash, proxy);
     downloadedIds.add(addon.id);
   }
 

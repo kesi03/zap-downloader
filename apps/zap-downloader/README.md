@@ -409,6 +409,29 @@ zap-downloader workspace ./my-workspace
 ## Global Options
 
 - `-w`, `--workspace` - Workspace directory (default: `zap-workspace` or `ZAP_PACKAGES_WORKSPACE` env var)
+- `-x`, `--proxy` - Proxy URL (e.g., `http://proxy:8080`)
+
+### Proxy Support
+
+You can use a proxy for downloading by setting either:
+
+**Option 1: Command-line flag**
+```bash
+zap-downloader core -p linux -x http://proxy:8080
+zap-downloader addons -c config.yaml -x http://proxy:8080
+```
+
+**Option 2: Environment variable**
+```bash
+export HTTP_PROXY=http://proxy:8080
+export HTTPS_PROXY=http://proxy:8080
+
+# Or lowercase
+export http_proxy=http://proxy:8080
+export https_proxy=http://proxy:8080
+```
+
+The proxy option works with all commands that make network requests (e.g., `list`, `info`, `core`, `addons`, `download-zap`, `create-zap-config`, `offline pack`).
 
 ## Project Structure
 

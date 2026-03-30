@@ -161,6 +161,12 @@ const argv = yargs(process.argv.slice(2))
     default: getWorkspace(),
     global: true,
   })
+  .option('proxy', {
+    alias: 'x',
+    description: 'Proxy URL (e.g., http://proxy:8080, or set HTTP_PROXY/HTTPS_PROXY env)',
+    type: 'string',
+    global: true,
+  })
   .command(coreModule)
   .command(addonsModule)
   .command(listModule)

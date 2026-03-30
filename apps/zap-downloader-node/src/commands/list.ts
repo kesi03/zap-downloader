@@ -1,6 +1,7 @@
 import { fetchZapVersions } from '../parser';
 import { formatBytes } from '../downloader';
 import { Arguments } from 'yargs';
+import { getProxyUrl } from '../proxy';
 
 export const command = 'list';
 export const describe = 'List available ZAP versions and addons';
@@ -22,9 +23,11 @@ export const builder = (yargs: any) => {
 export const handler = async (argv: Arguments & {
   addons?: boolean;
   core?: boolean;
+  proxy?: string;
 }) => {
+  const proxy = argv.proxy || getProxyUrl();
   console.log('Fetching ZAP versions...');
-  const zapVersions = await fetchZapVersions();
+  const zapVersions = await fetchZapVersions(proxy);
 
   if (!argv.addons) {
     console.log('\n=== ZAP Core ===');
