@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dependencies:chrome": "pnpm --filter zap-downloader-node dependencies:chrome",
-    "dependencies:firefox": "pnpm --filter zap-downloader-node dependencies:firefox",
-    "verify:chrome": "pnpm --filter browser-verification verify:chrome",
-    "verify:firefox": "pnpm --filter browser-verification verify:firefox"
+    "dependencies:chrome": "pnpm --filter ./zap-downloader-node dependencies:chrome",
+    "dependencies:firefox": "pnpm --filter ./zap-downloader-node dependencies:firefox",
+    "verify:chrome": "pnpm --filter ./browser-verification verify:chrome",
+    "verify:firefox": "pnpm --filter ./browser-verification verify:firefox"
   },
   "devDependencies": {
     "ts-node": "^10.9.2"
