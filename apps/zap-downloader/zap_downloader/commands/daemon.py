@@ -152,7 +152,6 @@ def start_daemon(
     else:
         java_options.append("-Xmx2g")
 
-    java_options.append("-Djava.awt.headless=true")
     java_options.append(f"-Djava.io.tmpdir={tmp_dir}")
 
     config_flags: List[str] = []
