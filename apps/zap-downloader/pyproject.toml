@@ -110,3 +110,4 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = ["aiohttp.*", "tqdm.*", "typer.*", "yaml.*", "rich.*", "xmltodict.*"]
 ignore_missing_imports = true
+
