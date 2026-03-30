@@ -30,10 +30,10 @@ jobs:
         run: pnpm -r run build
       
       - name: Install Chrome
-        run: pnpm --filter @mockholm/zap-downloader exec ts-node src/index.ts dependencies chrome
+        run: pnpm offline:pack && pnpm offline:unpack && pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies chrome
       
       - name: Install Firefox
-        run: pnpm --filter @mockholm/zap-downloader exec ts-node src/index.ts dependencies firefox
+        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies firefox
       
       - name: Verify Chrome
         run: pnpm verify:chrome
@@ -65,10 +65,10 @@ jobs:
         run: pnpm -r run build
       
       - name: Install Chrome
-        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies chrome
+        run: pnpm dependencies:chrome
       
       - name: Install Firefox
-        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies firefox
+        run: pnpm dependencies:firefox
       
       - name: Verify Chrome
         run: pnpm verify:chrome

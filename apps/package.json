@@ -5,6 +5,8 @@
   "scripts": {
     "offline:pack": "pnpm --filter zap-downloader-node offline:pack",
     "offline:unpack": "pnpm --filter zap-downloader-node offline:unpack",
+    "dependencies:chrome": "pnpm --filter zap-downloader-node dependencies:chrome",
+    "dependencies:firefox": "pnpm --filter zap-downloader-node dependencies:firefox",
     "verify:chrome": "pnpm --filter browser-verification verify:chrome",
     "verify:firefox": "pnpm --filter browser-verification verify:firefox"
   },

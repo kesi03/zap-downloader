@@ -30,7 +30,9 @@
     "daemon:started": "ts-node src/index.ts daemon started",
     "offline": "ts-node src/index.ts offline",
     "offline:pack": "ts-node src/index.ts offline pack",
-    "offline:unpack": "ts-node src/index.ts offline unpack"
+    "offline:unpack": "ts-node src/index.ts offline unpack",
+    "dependencies:chrome":"ts-node src/index.ts dependencies chrome",
+    "dependencies:firefox":"ts-node src/index.ts dependencies firefox"
   },
   "repository": {
     "type": "git",
