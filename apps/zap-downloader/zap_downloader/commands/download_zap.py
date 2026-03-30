@@ -2,6 +2,7 @@ import typer
 import asyncio
 import os
 import yaml
+from typing import Optional
 from rich.console import Console
 
 from ..workspace import ensure_workspace, get_workspace

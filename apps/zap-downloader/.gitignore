@@ -10,3 +10,4 @@ downloads/
 venv
 __pycache__
 zap-workspace/
+.ruffle_cache/
