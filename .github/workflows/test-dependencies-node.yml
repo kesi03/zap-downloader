@@ -14,7 +14,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       
       - name: Enable Corepack + pin pnpm
         run: |
@@ -23,17 +23,17 @@ jobs:
       
       - name: Install dependencies
         working-directory: apps
-        run: pnpm install
+        run: pnpm install --no-lockfile
       
       - name: Build
         working-directory: apps
         run: pnpm -r run build
       
       - name: Install Chrome
-        run: pnpm offline:pack && pnpm offline:unpack && pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies chrome
+        run: pnpm dependencies:chrome
       
       - name: Install Firefox
-        run: pnpm --filter @mockholm/zap-downloader ts-node src/index.ts dependencies firefox
+        run: pnpm dependencies:firefox
       
       - name: Verify Chrome
         run: pnpm verify:chrome
@@ -51,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       
       - name: Enable Corepack + pin pnpm
         run: |
