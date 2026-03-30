@@ -1,9 +1,11 @@
 import { Builder } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 
-async function verifyChrome() {
+export async function verifyChrome(headless = true) {
   const options = new chrome.Options();
-  options.addArguments("--headless=new");
+  if (headless) {
+    options.addArguments("--headless=new");
+  }
 
   const driver = await new Builder()
     .forBrowser("chrome")

@@ -53,8 +53,10 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Install pnpm
-        run: npm install -g pnpm
+      - name: Enable Corepack + pin pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
       
       - name: Install dependencies
         working-directory: apps

@@ -1,9 +1,11 @@
 import { Builder } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
 
-async function verifyFirefox() {
+export async function verifyFirefox(headless = true) {
   const options = new firefox.Options();
-  options.addArguments("-headless");
+  if (headless) {
+    options.addArguments("-headless");
+  }
 
   const driver = await new Builder()
     .forBrowser("firefox")
