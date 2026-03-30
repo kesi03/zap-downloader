@@ -51,12 +51,24 @@ export const chromeCommand = {
         console.log(chalk.blue('Installing Chrome and chromedriver on Windows...'));
         ensureChoco();
         execSync('choco install googlechrome -y', { stdio: 'inherit' });
-        execSync('choco install chromedriver -y', { stdio: 'inherit' });
-        console.log(chalk.green('Chrome and chromedriver installed'));
+
+        const version = execSync('powershell -Command "(Get-Item "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe").VersionInfo.ProductVersion"').toString().trim();
+        const majorVersion = version.split('.')[0];
+        console.log(chalk.green(`Installed Chrome: ${version}`));
+
+        console.log(chalk.blue(`Installing matching chromedriver for Chrome ${majorVersion}...`));
+        const chromedriverUrl = `https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${majorVersion}/win32/chromedriver-win32.zip`;
+        execSync(
+          `powershell -Command "Invoke-WebRequest '${chromedriverUrl}' -OutFile chromedriver.zip"`,
+          { stdio: 'inherit' }
+        );
+        execSync('powershell -Command "Expand-Archive chromedriver.zip -DestinationPath C:\\tools\\chromedriver -Force"', { stdio: 'inherit' });
+        execSync('powershell -Command "$oldPath = [Environment]::GetEnvironmentVariable(\'PATH\', \'User\'); if ($oldPath -notlike \'*C:\\tools\\chromedriver*\') { [Environment]::SetEnvironmentVariable(\'PATH\', \"$oldPath;C:\\tools\\chromedriver\", \'User\') }"', { stdio: 'inherit' });
+        console.log(chalk.green('chromedriver installed'));
       } else {
         console.log(chalk.blue('Installing Chrome and chromedriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
-        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2t64 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1 wget unzip', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Chrome version ${argv.version}...`));
@@ -72,8 +84,21 @@ export const chromeCommand = {
         const version = execSync('google-chrome --version').toString().trim();
         console.log(chalk.green(`Installed Chrome: ${version}`));
 
-        execSync('sudo apt-get install -y chromium-chromedriver', { stdio: 'inherit' });
-        console.log(chalk.green('chromedriver installed'));
+        const majorVersion = version.match(/Chrome (\d+)/)?.[1];
+        if (majorVersion) {
+          console.log(chalk.blue(`Installing matching chromedriver for Chrome ${majorVersion}...`));
+          execSync(
+            `wget -q -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${majorVersion}/linux64/chromedriver-linux64.zip`,
+            { stdio: 'inherit' }
+          );
+          execSync('sudo unzip -o /tmp/chromedriver.zip -d /usr/local/bin/', { stdio: 'inherit' });
+          execSync('sudo mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver', { stdio: 'inherit' });
+          execSync('sudo rm -rf /usr/local/bin/chromedriver-linux64', { stdio: 'inherit' });
+          console.log(chalk.green('chromedriver installed'));
+        } else {
+          execSync('sudo apt-get install -y chromium-chromedriver', { stdio: 'inherit' });
+          console.log(chalk.green('chromedriver installed'));
+        }
       }
 
     } catch (err: any) {
