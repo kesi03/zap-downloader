@@ -56,6 +56,7 @@ export const chromeCommand = {
       } else {
         console.log(chalk.blue('Installing Chrome and chromedriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2 libatspi2.0-0 libcups2 libdrm2 libxfixes3 libxshmfence1', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Chrome version ${argv.version}...`));
@@ -107,8 +108,22 @@ export const firefoxCommand = {
 
       if (os === 'windows' || isWindows()) {
         console.log(chalk.blue('Installing Firefox and geckodriver on Windows...'));
+
+        let version = '0.36.0';
+        try {
+          const tagsHtml = execSync('curl -sL https://github.com/mozilla/geckodriver/tags').toString();
+          const match = tagsHtml.match(/geckodriver-v(\d+\.\d+\.\d+)/);
+          if (match) {
+            version = match[1];
+          }
+        } catch {
+          console.log(chalk.yellow(`Could not fetch latest version, using v${version}`));
+        }
+        const url = `https://github.com/mozilla/geckodriver/releases/download/v${version}/geckodriver-v${version}-win64.zip`;
+
+        console.log(chalk.blue(`Installing geckodriver v${version}`));
         execSync(
-          'powershell -Command "Invoke-WebRequest \'https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-win64.zip\' -OutFile geckodriver.zip"',
+          `powershell -Command "Invoke-WebRequest '${url}' -OutFile geckodriver.zip"`,
           { stdio: 'inherit' }
         );
         execSync('powershell -Command "Expand-Archive geckodriver.zip -DestinationPath C:\\tools\\geckodriver"', { stdio: 'inherit' });
@@ -117,6 +132,7 @@ export const firefoxCommand = {
       } else {
         console.log(chalk.blue('Installing Firefox and geckodriver...'));
         execSync('sudo apt-get update', { stdio: 'inherit' });
+        execSync('sudo apt-get install -y xvfb libgtk-3-0 libdbus-glib-1-2 libnss3 libnspr4 libasound2 libatk-bridge2.0-0 libxkbcommon0 libgbm1 libxcomposite1 libxdamage1 libxrandr2 libpango-1.0-0 libcairo2', { stdio: 'inherit' });
 
         if (argv.version) {
           console.log(chalk.blue(`Installing Firefox version ${argv.version}...`));
