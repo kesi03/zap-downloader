@@ -4,6 +4,32 @@ import * as tar from 'tar';
 import chalk from 'chalk';
 import { Arguments } from 'yargs';
 
+function updateFileCacheSize(zapVersionDir: string, cacheSize: number): boolean {
+  const scriptPath = path.join(zapVersionDir, 'db', 'zapdb.script');
+  
+  if (!fs.existsSync(scriptPath)) {
+    console.log(chalk.yellow('zapdb.script not found, skipping cache size update'));
+    return false;
+  }
+
+  let content = fs.readFileSync(scriptPath, 'utf-8');
+  const originalContent = content;
+  
+  content = content.replace(
+    /SET FILES CACHE SIZE \d+/g,
+    `SET FILES CACHE SIZE ${cacheSize}`
+  );
+
+  if (content !== originalContent) {
+    fs.writeFileSync(scriptPath, content, 'utf-8');
+    console.log(chalk.green(`Updated file cache size to ${cacheSize}`));
+    return true;
+  }
+
+  console.log(chalk.yellow('File cache size setting not found'));
+  return false;
+}
+
 export const unpackOfflineCommand = {
   command: 'unpack',
   describe: 'Unpack offline ZAP package',
@@ -20,12 +46,18 @@ export const unpackOfflineCommand = {
         alias: 'o',
         description: 'Output directory',
         type: 'string',
+      })
+      .option('file-cache-size', {
+        description: 'H2 database file cache size',
+        type: 'number',
+        default: 100000,
       });
   },
 
   handler: async (argv: Arguments & {
     input: string;
     output?: string;
+    fileCacheSize: number;
   }) => {
     const inputPath = argv.input;
     let outputDir = argv.output;
@@ -95,6 +127,8 @@ export const unpackOfflineCommand = {
       }
 
       if (zapVersionDir) {
+        updateFileCacheSize(zapVersionDir, argv.fileCacheSize);
+
         const pluginDir = path.join(zapVersionDir, 'plugin');
         const addonsInZapDir = path.join(zapDir, 'addons');
 

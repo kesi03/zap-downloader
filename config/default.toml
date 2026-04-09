@@ -27,7 +27,6 @@ flags = [
   "-XX:+UseZGC",
   "-Xss512k",
   "-XX:MaxRAMPercentage=80",
-  "-Dzap.session=/zap/wrk/session.data"
 ]
 
 [CONFIG]
@@ -35,7 +34,8 @@ flags = [
   "api.disablekey=true",
   "api.addrs.addr.name=.*",
   "api.addrs.addr.regex=true",
+  "database.request.bodysize=104857600",
   "database.response.bodysize=104857600",
-  "database.cache.size=1000000",
+  "database.compact=true",
   "database.recoverylog=false"
 ]
