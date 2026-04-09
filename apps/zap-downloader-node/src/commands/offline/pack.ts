@@ -123,8 +123,11 @@ enabled = false
 
 [JAVA_OPTIONS]
 flags = [
-  "-Xmx2g",
-  "-Xss512k"
+  "-Xms4g",
+  "-Xmx4g",
+  "-XX:+UseZGC",
+  "-Xss512k",
+  "-XX:MaxRAMPercentage=80",
 ]
 
 [CONFIG]
@@ -132,9 +135,9 @@ flags = [
   "api.disablekey=true",
   "api.addrs.addr.name=.*",
   "api.addrs.addr.regex=true",
-  "autoupdate.enabled=false",
+  "database.request.bodysize=104857600",
   "database.response.bodysize=104857600",
-  "database.cache.size=1000000",
+  "database.compact=true",
   "database.recoverylog=false"
 ]
 `;
