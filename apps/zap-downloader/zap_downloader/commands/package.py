@@ -94,10 +94,15 @@ flags = [
   "database.compact=true",
   "database.recoverylog=false",
   "ajaxSpider.browserId=chrome-headless",
-  "selenium.chromeArgs.args=--headless",
+  "ajaxSpider.numberOfBrowsers=1",
+  "ajaxSpider.maxDuration=60",
+  "ajaxSpider.maxStates=1000",
+  "selenium.chromeArgs.args=--headless=new",
   "selenium.chromeArgs.args=--disable-gpu",
   "selenium.chromeArgs.args=--no-sandbox",
   "selenium.chromeArgs.args=--disable-dev-shm-usage",
+  "selenium.chromeArgs.args=--memory-pressure-thresholds=1",
+  "selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024",
   "selenium.chrome.maxInstances=1",
   "addons.insights.death.threshold=-1"
 ]
