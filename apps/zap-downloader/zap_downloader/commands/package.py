@@ -22,10 +22,19 @@ def package(
     platform: str = typer.Option(
         "linux", "--platform", "-p", help="Platform for ZAP core"
     ),
+    chrome_browser: str = typer.Option(
+        None,
+        "--chrome-browser",
+        "-b",
+        help="Chrome browser path (defaults to CHROMEBROWSER env var)",
+    ),
 ):
     """Package ZAP and addons into a .tar archive."""
     if not workspace:
         workspace = get_workspace()
+
+    if chrome_browser is None:
+        chrome_browser = os.environ.get("CHROME_BROWSER")
 
     if not os.path.exists(workspace):
         console.print(f"[red]Workspace not found: {workspace}[/red]")
@@ -60,6 +69,32 @@ def package(
         except Exception:
             zap_version = "unknown"
 
+        config_flags = [
+            "api.disablekey=true",
+            "api.addrs.addr.name=.*",
+            "api.addrs.addr.regex=true",
+            "database.request.bodysize=104857600",
+            "database.response.bodysize=104857600",
+            "database.compact=true",
+            "database.recoverylog=false",
+            "ajaxSpider.browserId=chrome-headless",
+            "ajaxSpider.numberOfBrowsers=1",
+            "ajaxSpider.maxDuration=60",
+            "ajaxSpider.maxStates=1000",
+            "selenium.chromeArgs.args=--headless=new",
+            "selenium.chromeArgs.args=--disable-gpu",
+            "selenium.chromeArgs.args=--no-sandbox",
+            "selenium.chromeArgs.args=--disable-dev-shm-usage",
+            "selenium.chromeArgs.args=--memory-pressure-thresholds=1",
+            "selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024",
+            "selenium.chrome.maxInstances=1",
+            "addons.insights.death.threshold=-1",
+        ]
+        if chrome_browser:
+            config_flags.append(
+                f"selenium.chromeDriverPath={chrome_browser}/chromedriver"
+            )
+
         toml_content = f"""[ENV]
 ZAP_DOWNLOADER_WORKSPACE = ""
 
@@ -86,25 +121,7 @@ flags = [
 
 [CONFIG]
 flags = [
-  "api.disablekey=true",
-  "api.addrs.addr.name=.*",
-  "api.addrs.addr.regex=true",
-  "database.request.bodysize=104857600",
-  "database.response.bodysize=104857600",
-  "database.compact=true",
-  "database.recoverylog=false",
-  "ajaxSpider.browserId=chrome-headless",
-  "ajaxSpider.numberOfBrowsers=1",
-  "ajaxSpider.maxDuration=60",
-  "ajaxSpider.maxStates=1000",
-  "selenium.chromeArgs.args=--headless=new",
-  "selenium.chromeArgs.args=--disable-gpu",
-  "selenium.chromeArgs.args=--no-sandbox",
-  "selenium.chromeArgs.args=--disable-dev-shm-usage",
-  "selenium.chromeArgs.args=--memory-pressure-thresholds=1",
-  "selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024",
-  "selenium.chrome.maxInstances=1",
-  "addons.insights.death.threshold=-1"
+  {chr(10).join(f'  "{flag}",' for flag in config_flags)}
 ]
 """
         toml_path = os.path.join(workspace, "default.toml")

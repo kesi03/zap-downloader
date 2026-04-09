@@ -24,6 +24,12 @@ export const packOfflineCommand = {
         description: 'Platform for ZAP core',
         type: 'string',
         default: 'linux',
+      })
+      .option('chrome-browser', {
+        alias: 'b',
+        description: 'Chrome browser path (defaults to CHROMEBROWSER env var)',
+        type: 'string',
+        default: process.env.CHROME_BROWSER,
       });
   },
 
@@ -31,6 +37,7 @@ export const packOfflineCommand = {
     output?: string;
     platform?: string;
     proxy?: string;
+    chromeBrowser?: string;
   }) => {
     const platform = argv.platform || 'linux';
     const proxy = argv.proxy || getProxyUrl();
@@ -106,6 +113,34 @@ export const packOfflineCommand = {
       }
 
       console.log(chalk.blue('\n=== Creating offline config ==='));
+      const configFlags = [
+        'api.disablekey=true',
+        'api.addrs.addr.name=.*',
+        'api.addrs.addr.regex=true',
+        'database.request.bodysize=104857600',
+        'database.response.bodysize=104857600',
+        'database.compact=true',
+        'database.recoverylog=false',
+        'ajaxSpider.browserId=chrome-headless',
+        'ajaxSpider.numberOfBrowsers=1',
+        'ajaxSpider.maxDuration=60',
+        'ajaxSpider.maxStates=1000',
+        'selenium.chromeArgs.args=--headless=new',
+        'selenium.chromeArgs.args=--disable-gpu',
+        'selenium.chromeArgs.args=--no-sandbox',
+        'selenium.chromeArgs.args=--disable-dev-shm-usage',
+        'selenium.chromeArgs.args=--memory-pressure-thresholds=1',
+        'selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024',
+        'selenium.chrome.maxInstances=1',
+        'addons.insights.death.threshold=-1',
+      ];
+if (argv.chromeBrowser) {
+  configFlags.push(
+    `selenium.chromeDriverPath=${argv.chromeBrowser}/chromedriver`,
+    `selenium.chromeBinary=${argv.chromeBrowser}`
+  );
+}
+
       const tomlContent = `[ENV]
 ZAP_DOWNLOADER_WORKSPACE = ""
 
@@ -132,25 +167,7 @@ flags = [
 
 [CONFIG]
 flags = [
-  "api.disablekey=true",
-  "api.addrs.addr.name=.*",
-  "api.addrs.addr.regex=true",
-  "database.request.bodysize=104857600",
-  "database.response.bodysize=104857600",
-  "database.compact=true",
-  "database.recoverylog=false",
-  "ajaxSpider.browserId=chrome-headless",
-  "ajaxSpider.numberOfBrowsers=1",
-  "ajaxSpider.maxDuration=60",
-  "ajaxSpider.maxStates=1000",
-  "selenium.chromeArgs.args=--headless=new",
-  "selenium.chromeArgs.args=--disable-gpu",
-  "selenium.chromeArgs.args=--no-sandbox",
-  "selenium.chromeArgs.args=--disable-dev-shm-usage",
-  "selenium.chromeArgs.args=--memory-pressure-thresholds=1",
-  "selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024",
-  "selenium.chrome.maxInstances=1",
-  "addons.insights.death.threshold=-1"
+  ${configFlags.map(f => `"${f}"`).join(',\n  ')}
 ]
 `;
       const tomlPath = path.join(workspace, 'default.toml');

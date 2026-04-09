@@ -49,8 +49,17 @@ def pack_offline(
         "linux", "--platform", "-p", help="Platform for ZAP core"
     ),
     proxy: str = typer.Option(None, "--proxy", "-x", help="Proxy URL"),
+    chrome_browser: str = typer.Option(
+        None,
+        "--chrome-browser",
+        "-b",
+        help="Chrome browser path (defaults to CHROMEBROWSER env var)",
+    ),
 ):
     """Create offline ZAP package with all addons."""
+
+    if chrome_browser is None:
+        chrome_browser = os.environ.get("CHROME_BROWSER")
 
     async def _pack():
         nonlocal output
@@ -128,8 +137,37 @@ def pack_offline(
                     if os.path.exists(output_path):
                         os.remove(output_path)
 
-            console.print(f"[blue]=== Creating offline config ===[/blue]")
+            console.print("[blue]=== Creating offline config ===[/blue]")
             jar_path = f"zap/ZAP_{zap_versions.core.version}/zap-{zap_versions.core.version}.jar"
+
+            config_flags = [
+                "api.disablekey=true",
+                "api.addrs.addr.name=.*",
+                "api.addrs.addr.regex=true",
+                "database.request.bodysize=104857600",
+                "database.response.bodysize=104857600",
+                "database.compact=true",
+                "database.recoverylog=false",
+                "ajaxSpider.browserId=chrome-headless",
+                "ajaxSpider.numberOfBrowsers=1",
+                "ajaxSpider.maxDuration=60",
+                "ajaxSpider.maxStates=1000",
+                "selenium.chromeArgs.args=--headless=new",
+                "selenium.chromeArgs.args=--disable-gpu",
+                "selenium.chromeArgs.args=--no-sandbox",
+                "selenium.chromeArgs.args=--disable-dev-shm-usage",
+                "selenium.chromeArgs.args=--memory-pressure-thresholds=1",
+                "selenium.chromeArgs.args=--js-flags=--max-old-space-size=1024",
+                "selenium.chrome.maxInstances=1",
+                "addons.insights.death.threshold=-1",
+            ]
+            if chrome_browser:
+                config_flags.append(
+                    f"selenium.chromeBinary={chrome_browser}"
+                )
+                config_flags.append(
+                    f"selenium.chromeDriverPath={chrome_browser}/chromedriver"
+                )
 
             toml_content = f"""[ENV]
 ZAP_DOWNLOADER_WORKSPACE = ""
@@ -157,13 +195,7 @@ flags = [
 
 [CONFIG]
 flags = [
-  "api.disablekey=true",
-  "api.addrs.addr.name=.*",
-  "api.addrs.addr.regex=true",
-  "database.request.bodysize=104857600",
-  "database.response.bodysize=104857600",
-  "database.compact=true",
-  "database.recoverylog=false"
+  {chr(10).join(f'  "{flag}",' for flag in config_flags)}
 ]
 """
             toml_path = os.path.join(workspace, "default.toml")
