@@ -3,8 +3,8 @@ import os
 import shutil
 import tarfile
 from rich.console import Console
-
 from ..workspace import get_workspace
+from ..parser import fetch_zap_versions
 
 console = Console()
 
@@ -18,6 +18,9 @@ def package(
     ),
     toml: str = typer.Option(
         None, "--toml", "-t", help="Include default toml config in package"
+    ),
+    platform: str = typer.Option(
+        "linux", "--platform", "-p", help="Platform for ZAP core"
     ),
 ):
     """Package ZAP and addons into a .tar archive."""
@@ -46,6 +49,64 @@ def package(
     if not os.path.exists(zap_dir) and not os.path.exists(addons_dir):
         console.print("[red]No ZAP or addons found in workspace[/red]")
         raise typer.Exit(1)
+
+    if not os.path.exists(os.path.join(workspace, "default.toml")):
+        console.print(
+            "[yellow]No default.toml found, generating default config...[/yellow]"
+        )
+        try:
+            zap_versions = fetch_zap_versions()
+            zap_version = zap_versions.core.version
+        except Exception:
+            zap_version = "unknown"
+
+        toml_content = f"""[ENV]
+ZAP_DOWNLOADER_WORKSPACE = ""
+
+[SERVER]
+PORT = 8080
+HOST = "0.0.0.0"
+
+[PATHS]
+JAR_PATH = "zap/ZAP_{zap_version}/zap-{zap_version}.jar"
+INSTALL_DIR = "zap"
+DIR = ".zap"
+
+[AUTOUPDATE]
+enabled = false
+
+[JAVA_OPTIONS]
+flags = [
+  "-Xms4g",
+  "-Xmx4g",
+  "-XX:+UseZGC",
+  "-Xss512k",
+  "-XX:MaxRAMPercentage=80",
+]
+
+[CONFIG]
+flags = [
+  "api.disablekey=true",
+  "api.addrs.addr.name=.*",
+  "api.addrs.addr.regex=true",
+  "database.request.bodysize=104857600",
+  "database.response.bodysize=104857600",
+  "database.compact=true",
+  "database.recoverylog=false",
+  "ajaxSpider.browserId=chrome-headless",
+  "selenium.chromeArgs.args=--headless",
+  "selenium.chromeArgs.args=--disable-gpu",
+  "selenium.chromeArgs.args=--no-sandbox",
+  "selenium.chromeArgs.args=--disable-dev-shm-usage",
+  "selenium.chrome.maxInstances=1",
+  "addons.insights.death.threshold=-1"
+]
+"""
+        toml_path = os.path.join(workspace, "default.toml")
+        with open(toml_path, "w", encoding="utf-8") as f:
+            f.write(toml_content)
+        console.print("[green]Created default.toml with auto-update disabled[/green]")
+        toml = toml_path
 
     output_dir = os.path.dirname(output)
     if output_dir and not os.path.exists(output_dir):

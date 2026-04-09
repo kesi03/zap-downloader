@@ -4,10 +4,38 @@ import shutil
 import tarfile
 import tempfile
 import asyncio
+import re
 from rich.console import Console
 from ..utils.devops import set_devops_variables
 
 console = Console()
+
+
+def update_file_cache_size(zap_version_dir: str, cache_size: int) -> bool:
+    script_path = os.path.join(zap_version_dir, "db", "zapdb.script")
+
+    if not os.path.exists(script_path):
+        console.print(
+            "[yellow]zapdb.script not found, skipping cache size update[/yellow]"
+        )
+        return False
+
+    with open(script_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    original_content = content
+    content = re.sub(
+        r"SET FILES CACHE SIZE \d+", f"SET FILES CACHE SIZE {cache_size}", content
+    )
+
+    if content != original_content:
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        console.print(f"[green]Updated file cache size to {cache_size}[/green]")
+        return True
+
+    console.print("[yellow]File cache size setting not found[/yellow]")
+    return False
 
 
 def pack_offline(
@@ -120,8 +148,11 @@ enabled = false
 
 [JAVA_OPTIONS]
 flags = [
-  "-Xmx2g",
-  "-Xss512k"
+  "-Xms4g",
+  "-Xmx4g",
+  "-XX:+UseZGC",
+  "-Xss512k",
+  "-XX:MaxRAMPercentage=80",
 ]
 
 [CONFIG]
@@ -129,9 +160,9 @@ flags = [
   "api.disablekey=true",
   "api.addrs.addr.name=.*",
   "api.addrs.addr.regex=true",
-  "autoupdate.enabled=false",
+  "database.request.bodysize=104857600",
   "database.response.bodysize=104857600",
-  "database.cache.size=1000000",
+  "database.compact=true",
   "database.recoverylog=false"
 ]
 """
@@ -177,6 +208,9 @@ flags = [
 def unpack_offline(
     input: str = typer.Option(..., "--input", "-i", help="Path to .tar package file"),
     output: str = typer.Option(None, "--output", "-o", help="Output directory"),
+    file_cache_size: int = typer.Option(
+        100000, "--file-cache-size", help="H2 database file cache size"
+    ),
 ):
     """Unpack offline ZAP package."""
     import tarfile
@@ -228,6 +262,8 @@ def unpack_offline(
                     break
 
         if zap_version_dir:
+            update_file_cache_size(zap_version_dir, file_cache_size)
+
             plugin_dir = os.path.join(zap_version_dir, "plugin")
             addons_in_zap_dir = os.path.join(zap_dir, "addons")
 

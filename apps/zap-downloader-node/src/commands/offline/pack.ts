@@ -138,7 +138,14 @@ flags = [
   "database.request.bodysize=104857600",
   "database.response.bodysize=104857600",
   "database.compact=true",
-  "database.recoverylog=false"
+  "database.recoverylog=false",
+  "ajaxSpider.browserId=chrome-headless",
+  "selenium.chromeArgs.args=--headless",
+  "selenium.chromeArgs.args=--disable-gpu",
+  "selenium.chromeArgs.args=--no-sandbox",
+  "selenium.chromeArgs.args=--disable-dev-shm-usage",
+  "selenium.chrome.maxInstances=1",
+  "addons.insights.death.threshold=-1"
 ]
 `;
       const tomlPath = path.join(workspace, 'default.toml');

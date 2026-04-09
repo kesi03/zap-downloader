@@ -2,14 +2,45 @@ import typer
 import os
 import tarfile
 import shutil
+import re
 from rich.console import Console
 
 console = Console()
 
 
+def update_file_cache_size(zap_version_dir: str, cache_size: int) -> bool:
+    script_path = os.path.join(zap_version_dir, "db", "zapdb.script")
+
+    if not os.path.exists(script_path):
+        console.print(
+            "[yellow]zapdb.script not found, skipping cache size update[/yellow]"
+        )
+        return False
+
+    with open(script_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    original_content = content
+    content = re.sub(
+        r"SET FILES CACHE SIZE \d+", f"SET FILES CACHE SIZE {cache_size}", content
+    )
+
+    if content != original_content:
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        console.print(f"[green]Updated file cache size to {cache_size}[/green]")
+        return True
+
+    console.print("[yellow]File cache size setting not found[/yellow]")
+    return False
+
+
 def unpack(
     input: str = typer.Option(None, "--input", "-i", help="Path to .tar package file"),
     output: str = typer.Option(None, "--output", "-o", help="Output directory"),
+    file_cache_size: int = typer.Option(
+        100000, "--file-cache-size", help="H2 database file cache size"
+    ),
 ):
     """Unpack a ZAP package archive."""
     if not input:
@@ -60,6 +91,8 @@ def unpack(
                 break
 
     if zap_version_dir:
+        update_file_cache_size(zap_version_dir, file_cache_size)
+
         plugin_dir = os.path.join(zap_version_dir, "plugin")
 
         addons_to_process = None
