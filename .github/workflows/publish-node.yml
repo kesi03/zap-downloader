@@ -51,11 +51,7 @@ jobs:
         id: version
         working-directory: apps/zap-downloader-node
         run: |
-          if [[ "${{ inputs.version }}" == "patch" ]] || [[ "${{ inputs.version }}" == "minor" ]] || [[ "${{ inputs.version }}" == "major" ]]; then
-            pnpm version ${{ inputs.version }}
-          else
-            pnpm version ${{ inputs.version }} --no-git-tag-version
-          fi
+          pnpm version ${{ inputs.version }} --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       
@@ -65,6 +61,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       
-      - name: Push Changes and Tag
-        working-directory: apps/zap-downloader-node
-        run: git push origin main --follow-tags
+      - name: Commit and Tag
+        run: |
+          git add apps/zap-downloader-node/package.json
+          git commit -m "chore: bump node package to v${{ steps.version.outputs.version }}"
+          git tag node-v${{ steps.version.outputs.version }}
+          git push origin main --follow-tags
