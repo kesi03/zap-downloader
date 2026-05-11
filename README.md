@@ -533,6 +533,7 @@ python -m zap_downloader offline pack -o zap-offline.tar
 Options:
 - `-o`, `--output` - Output `.tar` archive path
 - `-p`, `--platform` - Platform (linux, windows, mac)
+- `-c`, `--custom` - URL to a custom `.zap` plugin file (can be specified multiple times)
 
 ### Unpack Offline Package
 
