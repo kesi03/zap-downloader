@@ -1,6 +1,6 @@
 {
   "name": "@mockholm/zap-downloader",
-  "version": "1.0.9",
+  "version": "1.0.11",
   "description": "CLI tool to download OWASP ZAP and addons",
   "main": "dist/index.js",
   "bin": {
@@ -31,8 +31,8 @@
     "offline": "ts-node src/index.ts offline",
     "offline:pack": "ts-node src/index.ts offline pack",
     "offline:unpack": "ts-node src/index.ts offline unpack",
-    "dependencies:chrome":"ts-node src/index.ts dependencies chrome",
-    "dependencies:firefox":"ts-node src/index.ts dependencies firefox"
+    "dependencies:chrome": "ts-node src/index.ts dependencies chrome",
+    "dependencies:firefox": "ts-node src/index.ts dependencies firefox"
   },
   "repository": {
     "type": "git",
