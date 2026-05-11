@@ -6,6 +6,8 @@ import tempfile
 import asyncio
 import re
 from rich.console import Console
+from typing import List, Optional
+from urllib.parse import urlparse
 from ..utils.devops import set_devops_variables
 
 console = Console()
@@ -54,6 +56,12 @@ def pack_offline(
         "--chrome-browser",
         "-b",
         help="Chrome browser path (defaults to CHROMEBROWSER env var)",
+    ),
+    custom: Optional[List[str]] = typer.Option(
+        None,
+        "--custom",
+        "-c",
+        help="URL to a custom .zap plugin file (can be specified multiple times)",
     ),
 ):
     """Create offline ZAP package with all addons."""
@@ -137,6 +145,57 @@ def pack_offline(
                     if os.path.exists(output_path):
                         os.remove(output_path)
 
+            console.print(f"[green]Downloaded {len(downloaded_ids)} addons[/green]")
+            if failed_addons:
+                console.print(
+                    f"[yellow]Skipped {len(failed_addons)} addons with hash mismatch: {', '.join(failed_addons)}[/yellow]"
+                )
+
+            if custom:
+                console.print(
+                    f"[blue]=== Downloading {len(custom)} custom plugins ===[/blue]"
+                )
+                for url in custom:
+                    file_name = os.path.basename(urlparse(url).path)
+                    output_path = os.path.join(addons_dir, file_name)
+                    console.print(f"\nDownloading custom plugin: {file_name}...")
+                    try:
+                        await download_file(url, output_path, None, proxy)
+                        console.print(
+                            f"[green]Downloaded custom plugin: {file_name}[/green]"
+                        )
+
+                        sha256_url = f"{url}.sha256"
+                        try:
+                            import requests
+
+                            sha256_resp = requests.get(
+                                sha256_url,
+                                timeout=10,
+                                proxies={"http": proxy, "https": proxy}
+                                if proxy
+                                else None,
+                            )
+                            if sha256_resp.status_code == 200:
+                                sha256_content = sha256_resp.text.strip()
+                                expected_hash = sha256_content.split()[0]
+                                import re
+
+                                if re.match(
+                                    r"^[a-f0-9]{64}$", expected_hash, re.IGNORECASE
+                                ):
+                                    from ..downloader import validate_hash
+
+                                    await validate_hash(output_path, expected_hash)
+                        except Exception:
+                            console.print(
+                                f"[gray]No .sha256 found at {sha256_url}, skipping hash validation[/gray]"
+                            )
+                    except Exception as e:
+                        console.print(
+                            f"[yellow]Failed to download custom plugin from {url}: {e}[/yellow]"
+                        )
+
             console.print("[blue]=== Creating offline config ===[/blue]")
             jar_path = f"zap/ZAP_{zap_versions.core.version}/zap-{zap_versions.core.version}.jar"
 
@@ -162,9 +221,7 @@ def pack_offline(
                 "addons.insights.death.threshold=-1",
             ]
             if chrome_browser:
-                config_flags.append(
-                    f"selenium.chromeBinary={chrome_browser}"
-                )
+                config_flags.append(f"selenium.chromeBinary={chrome_browser}")
                 config_flags.append(
                     f"selenium.chromeDriverPath={chrome_browser}/chromedriver"
                 )

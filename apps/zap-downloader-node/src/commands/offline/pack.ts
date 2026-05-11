@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import chalk from 'chalk';
 import { fetchZapVersions } from '../../parser';
-import { downloadFile, formatBytes } from '../../downloader';
+import { downloadFile, formatBytes, validateHash } from '../../downloader';
+import axios from 'axios';
 import { Arguments } from 'yargs';
 import { getProxyUrl } from '../../proxy';
 import { setDevOpsVariables } from '../../utils/devops';
@@ -30,6 +31,12 @@ export const packOfflineCommand = {
         description: 'Chrome browser path (defaults to CHROMEBROWSER env var)',
         type: 'string',
         default: process.env.CHROME_BROWSER,
+      })
+      .option('custom', {
+        alias: 'c',
+        description: 'URL to a custom .zap plugin file (can be specified multiple times)',
+        type: 'string',
+        array: true,
       });
   },
 
@@ -38,6 +45,7 @@ export const packOfflineCommand = {
     platform?: string;
     proxy?: string;
     chromeBrowser?: string;
+    custom?: string[];
   }) => {
     const platform = argv.platform || 'linux';
     const proxy = argv.proxy || getProxyUrl();
@@ -110,6 +118,33 @@ export const packOfflineCommand = {
       console.log(chalk.green(`\nDownloaded ${downloadedIds.size} addons`));
       if (failedAddons.length > 0) {
         console.log(chalk.yellow(`Skipped ${failedAddons.length} addons with hash mismatch: ${failedAddons.join(', ')}`));
+      }
+
+      if (argv.custom && argv.custom.length > 0) {
+        console.log(chalk.blue(`\n=== Downloading ${argv.custom.length} custom plugins ===`));
+        for (const url of argv.custom) {
+          const fileName = path.basename(new URL(url).pathname);
+          const outputPath = path.join(addonsDir, fileName);
+          console.log(`\nDownloading custom plugin: ${fileName}...`);
+          try {
+            await downloadFile(url, outputPath, undefined, proxy);
+            console.log(chalk.green(`Downloaded custom plugin: ${fileName}`));
+
+            const sha256Url = `${url}.sha256`;
+            try {
+              const sha256Response = await axios.get(sha256Url, { timeout: 10000 });
+              const sha256Content = sha256Response.data.trim();
+              const expectedHash = sha256Content.split(/\s+/)[0];
+              if (/^[a-f0-9]{64}$/i.test(expectedHash)) {
+                await validateHash(outputPath, expectedHash);
+              }
+            } catch {
+              console.log(chalk.gray(`No .sha256 found at ${sha256Url}, skipping hash validation`));
+            }
+          } catch (err: any) {
+            console.log(chalk.yellow(`Failed to download custom plugin from ${url}: ${err.message}`));
+          }
+        }
       }
 
       console.log(chalk.blue('\n=== Creating offline config ==='));
