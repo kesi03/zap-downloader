@@ -51,7 +51,9 @@ jobs:
         id: version
         working-directory: apps/zap-downloader-node
         run: |
-          pnpm version ${{ inputs.version }} --no-git-tag-version
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            pnpm version ${{ inputs.version }} --no-git-tag-version
+          fi
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       
@@ -62,6 +64,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       
       - name: Commit and Tag
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git add apps/zap-downloader-node/package.json
           git commit -m "chore: bump node package to v${{ steps.version.outputs.version }}"
