@@ -36,7 +36,7 @@ jobs:
       
       - name: Create offline package
         working-directory: apps/zap-downloader
-        run: python -m zap_downloader offline pack
+        run: python -m zap_downloader offline pack --custom https://github.com/kesi03/zap-config-uploader/releases/download/v0.1.2/upload-alpha-0.1.2.zap
       
       - name: Find offline package
         working-directory: apps/zap-downloader

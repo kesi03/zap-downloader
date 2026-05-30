@@ -229,7 +229,7 @@ export const startDaemonCommand = {
       javaOptions.push('-Xmx2g');
     }
 
-    javaOptions.push(`-Djava.io.tmpdir="${absTmpDir}"`);
+    javaOptions.push(`-Djava.io.tmpdir=${absTmpDir}`);
 
     const configFlags: string[] = [];
 
@@ -245,7 +245,7 @@ export const startDaemonCommand = {
 
     const javaArgs = [
       ...javaOptions,
-      `-Djava.io.tmpdir="${absTmpDir}"`,
+      `-Djava.io.tmpdir=${absTmpDir}`,
       '-jar', absJarPath,
       '-daemon',
       '-dir', absZapDir,

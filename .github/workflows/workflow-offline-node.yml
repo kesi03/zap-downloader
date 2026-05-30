@@ -44,7 +44,7 @@ jobs:
       - name: Create offline package
         working-directory: apps/zap-downloader-node
         run: |
-          pnpm offline:pack
+          pnpm offline:pack --custom https://github.com/kesi03/zap-config-uploader/releases/download/v0.1.2/upload-alpha-0.1.2.zap
           echo "OFFLINE_PACKAGE_PATH=$(ls zap-offline-*.tar | head -n 1)" >> $GITHUB_ENV
        
       - name: Unpack offline package
