@@ -1,7 +1,10 @@
 {
   "name": "@mockholm/zap-downloader",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "CLI tool to download OWASP ZAP and addons",
+  "files": [
+    "dist/"
+  ],
   "main": "dist/index.js",
   "bin": {
     "zap-downloader": "./dist/index.js"

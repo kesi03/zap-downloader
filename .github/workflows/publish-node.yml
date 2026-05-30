@@ -68,5 +68,5 @@ jobs:
         run: |
           git add apps/zap-downloader-node/package.json
           git commit -m "chore: bump node package to v${{ steps.version.outputs.version }}"
-          git tag node-v${{ steps.version.outputs.version }}
+          git tag v${{ steps.version.outputs.version }}
           git push origin main --follow-tags
